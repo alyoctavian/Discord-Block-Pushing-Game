@@ -1,0 +1,43 @@
+package Commands;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+
+public class Clear extends ListenerAdapter{
+	
+	@Override
+	public void onGuildMessageReceived(GuildMessageReceivedEvent event)
+	{
+        String[] args = event.getMessage().getContentRaw().split("\\s+");
+
+        if (args[0].equalsIgnoreCase("!clear")) 
+        {
+            if (args.length < 2) 
+            {
+                EmbedBuilder usage = new EmbedBuilder();
+                usage.setColor(0xff3923);
+                usage.setTitle("Specify amount to delete");
+                usage.setDescription("Usage: !clear [# of messages]");
+                event.getChannel().sendMessageEmbeds(usage.build()).queue();
+            } 
+            else 
+            {
+                try
+                {
+                	List<Message> messages = event.getChannel().getHistory().retrievePast(Integer.parseInt(args[1])).complete();
+                    event.getChannel().deleteMessages(messages).queue();
+                    event.getChannel().sendMessage("Messages has been deleted!").queue(m -> m.delete().queueAfter(5, TimeUnit.SECONDS));
+                }
+                catch (IllegalArgumentException errorException)
+                {
+                	
+                }
+            }
+        }
+	}
+}

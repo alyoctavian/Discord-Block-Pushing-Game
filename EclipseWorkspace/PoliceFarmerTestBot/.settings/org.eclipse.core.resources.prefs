@@ -1,0 +1,5 @@
+eclipse.preferences.version=1
+encoding//src/Commands/Clear.java=UTF-8
+encoding//src/Events/GuildMessageReactionAdd.java=UTF-8
+encoding//src/Events/GuildMessageReceived.java=UTF-8
+encoding//src/GridBlocks/GridBlocksGame.java=UTF-8

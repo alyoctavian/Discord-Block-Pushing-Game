@@ -1,0 +1,33 @@
+package CreateChannel;
+
+import java.util.EnumSet;
+
+import Main.BotStartup;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+
+public class CreateChannel extends ListenerAdapter{
+	
+	@Override
+	public void onGuildMessageReceived(GuildMessageReceivedEvent event)
+	{
+		String[] args = event.getMessage().getContentRaw().split(" ");
+		
+		if (args[0].equalsIgnoreCase(BotStartup.prefix + "create"))
+		{
+			Guild guild = event.getMember().getGuild();
+			
+			String name = "New Text Channel";
+	
+		    guild.createTextChannel(name)
+		         .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
+		         .addPermissionOverride(guild.getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
+		         .queue(); // this actually sends the request to discord.
+		    
+		    event.getChannel().sendMessage("Channel Created").queue();
+		}
+	}
+}

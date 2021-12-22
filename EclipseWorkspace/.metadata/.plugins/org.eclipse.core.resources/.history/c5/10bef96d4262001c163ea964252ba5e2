@@ -1,0 +1,11 @@
+package GridBlocks;
+
+public class GridViking {
+	String HeroIcon;
+	GridPosition pos;
+	
+	public GridViking() {
+		// TODO Auto-generated constructor stub
+		HeroIcon = "<:viking1:922507879402061895>";
+	}
+}

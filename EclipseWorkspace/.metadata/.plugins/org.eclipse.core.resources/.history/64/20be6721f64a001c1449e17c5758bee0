@@ -1,0 +1,31 @@
+package Commands;
+
+import java.awt.Color;
+
+import Main.BotStartup;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+
+public class Clear extends ListenerAdapter{
+	
+	@Override
+	public void onGuildMessageReceived(GuildMessageReceivedEvent event)
+	{
+        String[] args = e.getMessage().getContentRaw().split("\\s+");
+
+        if (args[0].equalsIgnoreCase("!clear")) {
+            if (args.length < 2) {
+                EmbedBuilder usage = new EmbedBuilder();
+                usage.setColor(0xff3923);
+                usage.setTitle("Specify amount to delete");
+                usage.setDescription("Usage: !clear [# of messages]");
+                e.getChannel().sendMessage(usage.build()).queue();
+            } else {
+                List<Message> messages = e.getChannel().getHistory().retrievePast(Integer.parseInt(args[1])).complete();
+                e.getChannel().deleteMessages(messages).queue();
+                e.getChannel().sendMessage("Messages has been deleted!").queue(m -> m.delete().queueAfter(5, TimeUnit.SECONDS));
+            }
+        }
+	}
+}

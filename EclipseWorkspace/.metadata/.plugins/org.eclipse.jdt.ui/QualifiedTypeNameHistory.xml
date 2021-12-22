@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.JDABuilder"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.entities.Activity"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.OnlineStatus"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent"/>
+    <fullyQualifiedTypeName name="Main.BotStartup"/>
+    <fullyQualifiedTypeName name="java.lang.System"/>
+    <fullyQualifiedTypeName name="PointsSystem.PointsSystem"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.utils.concurrent.Task"/>
+    <fullyQualifiedTypeName name="java.lang.Override"/>
+    <fullyQualifiedTypeName name="java.lang.constant.Constable"/>
+    <fullyQualifiedTypeName name="java.sql.ClientInfoStatus"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.entities.Role"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.entities.Invite.Guild"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.Permission"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.utils.WidgetUtil.Widget.Member"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.entities.Member"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.entities.Guild"/>
+    <fullyQualifiedTypeName name="CreateChannel.CreateChannel"/>
+    <fullyQualifiedTypeName name="java.util.Locale.Category"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.entities.Category"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.entities.Invite.Channel"/>
+    <fullyQualifiedTypeName name="java.util.List"/>
+    <fullyQualifiedTypeName name="java.lang.String"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.hooks.ListenerAdapter"/>
+    <fullyQualifiedTypeName name="GridBlocks.GridBlocksGame"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.entities.Message"/>
+    <fullyQualifiedTypeName name="GridBlocks.GridPosition"/>
+    <fullyQualifiedTypeName name="GridBlocks.GridViking"/>
+    <fullyQualifiedTypeName name="GridBlocks.GridBlocksGame.direction"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.events.Event"/>
+    <fullyQualifiedTypeName name="net.dv8tion.jda.api.entities.TextChannel"/>
+</qualifiedTypeNameHistroy>
