@@ -8,8 +8,6 @@ public class GridViking {
 	{
 		HeroIcon = "<:viking1:922507879402061895>";
 		
-		pos = new GridPosition();
-		pos.x = 0;
-		pos.y = 0;
+		pos = new GridPosition(0 , 0);
 	}
 }

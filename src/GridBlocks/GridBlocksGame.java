@@ -86,6 +86,10 @@ public class GridBlocksGame extends ListenerAdapter{
 		// Add the Giant monster
 		AddGiantMonster();
 		
+		// Debug purposes
+		// Add a number
+		AddNumber();
+		
 		CreateGridString();
 	}
 	
@@ -128,6 +132,29 @@ public class GridBlocksGame extends ListenerAdapter{
 		else 
 		{
 			AddLock();
+		}
+	}
+	
+	public void AddNumber()
+	{
+		Random numRandom = new Random();
+		
+		int i = numRandom.nextInt(GridSize);
+		int j = numRandom.nextInt(GridSize);
+		
+		if (Grid[i][j].equals(block))
+		{
+			Random randomVal = new Random();
+			
+			int val = randomVal.nextInt(10);
+			
+			GridNumberBlock num = new GridNumberBlock(new GridPosition(i, j), val);
+			
+			Grid[i][j] = num.num_icon;
+		}
+		else 
+		{
+			AddNumber();
 		}
 	}
 	
