@@ -1,6 +1,9 @@
 package GridBlocks;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import Main.BotStartup;
@@ -41,11 +44,17 @@ public class GridBlocksGame extends ListenerAdapter{
 	// Select character message
 	Message SelectHeroMsg = null;
 	
+	// Latest Grid Message to react to
+	Message GridMsg = null;
+	
 	GridViking Hero;
 	
 	// Grid variables
 	String[][] Grid;
 	String GridString;
+	
+	// Numbers array
+	List<GridNumberBlock> numbers_list = new ArrayList<GridNumberBlock>();
 	
 	int GridSize;
 	
@@ -63,8 +72,8 @@ public class GridBlocksGame extends ListenerAdapter{
 	}
 	
 	public void CreateGrid()
-	{
-		GridSize = 5;
+	{		
+		GridSize = 6;
 		
 		Grid = new String[GridSize][GridSize];
 		
@@ -86,7 +95,9 @@ public class GridBlocksGame extends ListenerAdapter{
 		// Add the Giant monster
 		AddGiantMonster();
 		
-		// Debug purposes
+		// Clear the numbers list
+		numbers_list.clear();
+		
 		// Add a number
 		AddNumber();
 		
@@ -142,6 +153,12 @@ public class GridBlocksGame extends ListenerAdapter{
 		int i = numRandom.nextInt(GridSize);
 		int j = numRandom.nextInt(GridSize);
 		
+		if (isNearEdge(i, j))
+		{
+			AddNumber();
+			return;
+		}
+		
 		if (Grid[i][j].equals(block))
 		{
 			Random randomVal = new Random();
@@ -150,7 +167,9 @@ public class GridBlocksGame extends ListenerAdapter{
 			
 			GridNumberBlock num = new GridNumberBlock(new GridPosition(i, j), val);
 			
-			Grid[i][j] = num.num_icon;
+			Grid[j][i] = num.num_icon;
+			
+			numbers_list.add(num);
 		}
 		else 
 		{
@@ -171,6 +190,16 @@ public class GridBlocksGame extends ListenerAdapter{
 			
 			GridString += "\n";
 		}
+	}
+	
+	public Boolean isNearEdge(int x, int y)
+	{
+		if (x == GridSize -1 || y == GridSize -1)
+		{
+			return true;
+		}
+		
+		return false;
 	}
 		
 	@Override
@@ -243,7 +272,7 @@ public class GridBlocksGame extends ListenerAdapter{
 			}
 		}
 		// TODO: Check if it is the GridMessage
-		else 
+		else if (GridMsg != null && event.getMessageId().equalsIgnoreCase(GridMsg.getId()))
 		{
 			if (event.getReactionEmote().getName().equalsIgnoreCase(ArrowRight))
 			{
@@ -280,6 +309,7 @@ public class GridBlocksGame extends ListenerAdapter{
 	public void SendGridMessage(TextChannel channel)
 	{
 		channel.sendMessage(GridString).queue(message -> {
+			GridMsg = message;
 			message.addReaction(ArrowLeft).queue();
 			message.addReaction(ArrowRight).queue();
 			message.addReaction(ArrowDown).queue();
@@ -314,6 +344,10 @@ public class GridBlocksGame extends ListenerAdapter{
 	
 	public void MoveRight()
 	{
+		// Check if there is a number in the moving direction
+		GridNumberBlock rightNum = get_num_at_position(Hero.pos.y, Hero.pos.x + 1);
+		
+		// Check if we can move
 		if (Hero.pos.x < GridSize -1 && 
 			Grid[Hero.pos.y][Hero.pos.x + 1] == block)
 		
@@ -324,10 +358,27 @@ public class GridBlocksGame extends ListenerAdapter{
 			
 			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
 		}
+		else if (Hero.pos.x < GridSize -2 &&
+				rightNum != null)
+		{
+			// Move the hero
+			Grid[Hero.pos.y][Hero.pos.x] = block;
+			
+			Hero.pos.x += 1;
+			
+			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
+			
+			// Move the block to the right
+			rightNum.pos.x += 1;
+			Grid[rightNum.pos.y][rightNum.pos.x] = rightNum.num_icon;
+		}
 	}
 	
 	public void MoveLeft()
 	{
+		// Check if there is a number in the moving direction
+		GridNumberBlock leftNum = get_num_at_position(Hero.pos.y, Hero.pos.x - 1);
+		
 		if (Hero.pos.x > 0 && 
 			Grid[Hero.pos.y][Hero.pos.x - 1] == block)
 		
@@ -338,10 +389,27 @@ public class GridBlocksGame extends ListenerAdapter{
 			
 			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
 		}
+		else if (Hero.pos.x > 1 &&
+				leftNum != null)
+		{
+			// Move the hero
+			Grid[Hero.pos.y][Hero.pos.x] = block;
+			
+			Hero.pos.x -= 1;
+			
+			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
+			
+			// Move the block
+			leftNum.pos.x -= 1;
+			Grid[leftNum.pos.y][leftNum.pos.x] = leftNum.num_icon;
+		}
 	}
 	
 	public void MoveDown()
 	{
+		// Check if there is a number in the moving direction
+		GridNumberBlock downNum = get_num_at_position(Hero.pos.y + 1, Hero.pos.x);
+		
 		if (Hero.pos.y < GridSize - 1 && 
 			Grid[Hero.pos.y + 1][Hero.pos.x] == block)
 		
@@ -352,10 +420,27 @@ public class GridBlocksGame extends ListenerAdapter{
 			
 			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
 		}
+		else if (Hero.pos.y < GridSize - 2 &&
+				downNum != null) 
+		{
+			// Move the hero
+			Grid[Hero.pos.y][Hero.pos.x] = block;
+			
+			Hero.pos.y += 1;
+			
+			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
+			
+			// Move the block
+			downNum.pos.y += 1;
+			Grid[downNum.pos.y][downNum.pos.x] = downNum.num_icon;
+		}
 	}
 	
 	public void MoveUp()
 	{
+		// Check if there is a number in the moving direction
+		GridNumberBlock upNum = get_num_at_position(Hero.pos.y - 1, Hero.pos.x);
+		
 		if (Hero.pos.y > 0 && 
 			Grid[Hero.pos.y - 1][Hero.pos.x] == block)
 		
@@ -366,5 +451,34 @@ public class GridBlocksGame extends ListenerAdapter{
 			
 			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
 		}
+		else if (Hero.pos.y > 1 &&
+				upNum != null)
+		{
+			// Move the hero
+			Grid[Hero.pos.y][Hero.pos.x] = block;
+			
+			Hero.pos.y -= 1;
+			
+			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
+			
+			// Move the number
+			upNum.pos.y -= 1;
+			Grid[upNum.pos.y][upNum.pos.x] = upNum.num_icon;
+		}
+		
+	}
+	
+	public GridNumberBlock get_num_at_position(int y, int x)
+	{
+		for (int i = 0; i < numbers_list.size(); i++)
+		{
+			if (numbers_list.get(i).pos.x == x &&
+					numbers_list.get(i).pos.y == y)
+			{
+				return numbers_list.get(i);
+			}
+		}
+		
+		return null;
 	}
 }
