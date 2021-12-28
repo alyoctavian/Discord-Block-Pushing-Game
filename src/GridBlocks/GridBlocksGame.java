@@ -16,29 +16,30 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class GridBlocksGame extends ListenerAdapter{
 
+	// Basic Grid Emotes
 	String block = "🔳";
 	String giant = "👹";
 	
-	// Reaction strings
+	// Reaction Emote Strings
 	String ReactViking1 = "viking1:922507879402061895";
 	String ReactViking2 = "viking2:922514842638774352";
 	String ReactViking3 = "viking3:922515468303101952";
 	String ReactViking4 = "viking4:922515511517007882";
 	
-	// Hero icons
+	// Hero Icons Strings
 	String Viking1 = "<:viking1:922507879402061895>";
 	String Viking2 = "<:viking2:922514842638774352>";
 	String Viking3 = "<:viking3:922515468303101952>";
 	String Viking4 = "<:viking4:922515511517007882>";
 	
-	// Arrow emotes
+	// Arrow Emotes Strings
 	String ArrowLeft= "⬅️";
 	String ArrowRight = "➡️";
 	String ArrowDown = "⬇️";
 	String ArrowUp = "⬆️";
 	String RefreshArrows = "🔄";
 	
-	// Lock emote
+	// Lock Emote String
 	String Lock = "🔐";
 	
 	// Select character message
@@ -47,16 +48,20 @@ public class GridBlocksGame extends ListenerAdapter{
 	// Latest Grid Message to react to
 	Message GridMsg = null;
 	
+	// Player Class
 	GridViking Hero;
 	
 	// Grid variables
 	String[][] Grid;
 	String GridString;
+	int GridSize;
 	
 	// Numbers array
 	List<GridNumberBlock> numbers_list = new ArrayList<GridNumberBlock>();
 	
-	int GridSize;
+	// Expected answers
+	AnswerQuotient ans_quotient;
+	AnswerRemainder ans_remainder;
 	
 	// Direction enum
 	enum direction {
@@ -69,6 +74,10 @@ public class GridBlocksGame extends ListenerAdapter{
 	public GridBlocksGame() 
 	{
 		Hero = new GridViking();
+		
+		ans_quotient = new AnswerQuotient();
+		
+		ans_remainder = new AnswerRemainder();
 	}
 	
 	public void CreateGrid()
@@ -89,17 +98,14 @@ public class GridBlocksGame extends ListenerAdapter{
 		// Add the Viking hero
 		AddVikingHero();
 		
-		// Add the Lock
-		AddLock();
-		
 		// Add the Giant monster
 		AddGiantMonster();
 		
 		// Clear the numbers list
 		numbers_list.clear();
 		
-		// Add a number
-		AddNumber();
+		// Create the simple question
+		CreateSimpleQuestion();
 		
 		CreateGridString();
 	}
@@ -146,34 +152,30 @@ public class GridBlocksGame extends ListenerAdapter{
 		}
 	}
 	
-	public void AddNumber()
+	public void AddNumber(int val)
 	{
 		Random numRandom = new Random();
 		
-		int i = numRandom.nextInt(GridSize);
-		int j = numRandom.nextInt(GridSize);
+		int x = numRandom.nextInt(GridSize);
+		int y = numRandom.nextInt(GridSize);
 		
-		if (isNearEdge(i, j))
+		if (isNearEdge(x, y))
 		{
-			AddNumber();
+			AddNumber(val);
 			return;
 		}
 		
-		if (Grid[i][j].equals(block))
+		if (Grid[y][x].equals(block))
 		{
-			Random randomVal = new Random();
+			GridNumberBlock num = new GridNumberBlock(new GridPosition(x, y), val);
 			
-			int val = randomVal.nextInt(10);
-			
-			GridNumberBlock num = new GridNumberBlock(new GridPosition(i, j), val);
-			
-			Grid[j][i] = num.num_icon;
+			Grid[y][x] = num.num_icon;
 			
 			numbers_list.add(num);
 		}
 		else 
 		{
-			AddNumber();
+			AddNumber(val);
 		}
 	}
 	
@@ -194,7 +196,7 @@ public class GridBlocksGame extends ListenerAdapter{
 	
 	public Boolean isNearEdge(int x, int y)
 	{
-		if (x == GridSize -1 || y == GridSize -1)
+		if (x == GridSize -1 || y == GridSize -1 || x == 0 || y == 0)
 		{
 			return true;
 		}
@@ -240,6 +242,11 @@ public class GridBlocksGame extends ListenerAdapter{
 			
 			SendGridMessage(event.getChannel());
 		}
+		
+		if (args[0].equalsIgnoreCase(BotStartup.prefix + "simple"))
+		{
+			CreateSimpleQuestion();
+		}
 	}
 		
 	@Override
@@ -271,7 +278,6 @@ public class GridBlocksGame extends ListenerAdapter{
 				Hero.HeroIcon = Viking4;
 			}
 		}
-		// TODO: Check if it is the GridMessage
 		else if (GridMsg != null && event.getMessageId().equalsIgnoreCase(GridMsg.getId()))
 		{
 			if (event.getReactionEmote().getName().equalsIgnoreCase(ArrowRight))
@@ -480,5 +486,144 @@ public class GridBlocksGame extends ListenerAdapter{
 		}
 		
 		return null;
+	}
+	
+	public void CreateSimpleQuestion()
+	{
+		Random rand = new Random();
+		
+		int divident_val = rand.ints(0, 10).findFirst().getAsInt();
+		
+		int divisor_val = rand.ints(2, 10).findFirst().getAsInt();
+		
+		System.out.println("Random divdent " + divident_val + '\n' +
+							"Random Divisor " + divisor_val + '\n');
+		
+		ans_quotient.expected_val = Math.floorDiv(divident_val, divisor_val);
+		ans_remainder.expected_val = Math.floorMod(divident_val, divisor_val);
+		
+		System.out.println("Quotient " + ans_quotient.expected_val + '\n' +
+				"Remainder " + ans_remainder.expected_val + '\n');
+		
+		add_simple_numbers();
+		
+		add_quotient();
+		
+		add_remainder();
+	}
+	
+	public void add_simple_numbers()
+	{
+		// Add the expected answers
+		AddNumber(ans_quotient.expected_val);
+		
+		AddNumber(ans_remainder.expected_val);
+		
+		// Add two more random numbers
+		
+		Random numRandom = new Random();
+		
+		int randomVal = numRandom.nextInt(Math.min(ans_quotient.expected_val + 4, 10));
+		int loops_try = 0;
+		
+		// Add three more random  numbers
+		while (is_value_in_list(randomVal))
+		{
+			randomVal = numRandom.nextInt(Math.min(ans_quotient.expected_val + 4, 10));
+			
+			loops_try += 1;
+			
+			if (loops_try > 4)
+			{
+				randomVal = numRandom.nextInt(10);
+			}
+		}
+		
+		AddNumber(randomVal);
+		
+		loops_try = 0;
+		
+		while (is_value_in_list(randomVal))
+		{
+			randomVal = numRandom.nextInt(Math.min(ans_remainder.expected_val + 4, 10));
+			
+			loops_try += 1;
+			
+			if (loops_try > 4)
+			{
+				randomVal = numRandom.nextInt(10);
+			}
+		}
+		
+		AddNumber(randomVal);
+		
+		loops_try = 0;
+		
+		while (is_value_in_list(randomVal))
+		{
+			randomVal = numRandom.nextInt(Math.min(ans_quotient.expected_val + 4, 10));
+			
+			loops_try += 1;
+			
+			if (loops_try > 4)
+			{
+				randomVal = numRandom.nextInt(10);
+			}
+		}
+		
+		AddNumber(randomVal);
+	}
+	
+	public void add_quotient()
+	{
+		Random numRandom = new Random();
+		
+		int x = numRandom.nextInt(GridSize);
+		int y = numRandom.nextInt(GridSize);
+		
+		if (Grid[y][x].equals(block))
+		{
+			ans_quotient.pos.x = x;
+			ans_quotient.pos.y = y;
+			
+			Grid[y][x] = ans_quotient.icon_string;
+		}
+		else 
+		{
+			add_quotient();
+		}
+	}
+	
+	public void add_remainder()
+	{
+		Random numRandom = new Random();
+		
+		int x = numRandom.nextInt(GridSize);
+		int y = numRandom.nextInt(GridSize);
+		
+		if (Grid[y][x].equals(block))
+		{
+			ans_remainder.pos.x = x;
+			ans_remainder.pos.y = y;
+			
+			Grid[y][x] = ans_remainder.icon_string;
+		}
+		else 
+		{
+			add_remainder();
+		}
+	}
+	
+	public Boolean is_value_in_list(int val)
+	{
+		for (int i = 0; i < numbers_list.size(); i++)
+		{
+			if (val == numbers_list.get(i).num_value)
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }
