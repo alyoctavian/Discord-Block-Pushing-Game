@@ -181,6 +181,8 @@ public class GridBlocksGame extends ListenerAdapter{
 	
 	public void CreateGridString()
 	{
+		add_answer_icons();
+		
 		GridString = "";
 		
 		for(int i = 0; i < GridSize; i++)
@@ -354,8 +356,8 @@ public class GridBlocksGame extends ListenerAdapter{
 		GridNumberBlock rightNum = get_num_at_position(Hero.pos.y, Hero.pos.x + 1);
 		
 		// Check if we can move
-		if (Hero.pos.x < GridSize -1 && 
-			Grid[Hero.pos.y][Hero.pos.x + 1] == block)
+		if (Hero.pos.x < GridSize -1 &&
+			can_move_dir(Hero.pos.y, Hero.pos.x + 1))
 		
 		{
 			Grid[Hero.pos.y][Hero.pos.x] = block;
@@ -365,6 +367,7 @@ public class GridBlocksGame extends ListenerAdapter{
 			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
 		}
 		else if (Hero.pos.x < GridSize -2 &&
+				can_move_dir(Hero.pos.y, Hero.pos.x + 2) &&
 				rightNum != null)
 		{
 			// Move the hero
@@ -385,8 +388,8 @@ public class GridBlocksGame extends ListenerAdapter{
 		// Check if there is a number in the moving direction
 		GridNumberBlock leftNum = get_num_at_position(Hero.pos.y, Hero.pos.x - 1);
 		
-		if (Hero.pos.x > 0 && 
-			Grid[Hero.pos.y][Hero.pos.x - 1] == block)
+		if (Hero.pos.x > 0 &&
+			can_move_dir(Hero.pos.y, Hero.pos.x - 1))
 		
 		{
 			Grid[Hero.pos.y][Hero.pos.x] = block;
@@ -396,6 +399,7 @@ public class GridBlocksGame extends ListenerAdapter{
 			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
 		}
 		else if (Hero.pos.x > 1 &&
+				can_move_dir(Hero.pos.y, Hero.pos.x - 2) &&
 				leftNum != null)
 		{
 			// Move the hero
@@ -416,9 +420,8 @@ public class GridBlocksGame extends ListenerAdapter{
 		// Check if there is a number in the moving direction
 		GridNumberBlock downNum = get_num_at_position(Hero.pos.y + 1, Hero.pos.x);
 		
-		if (Hero.pos.y < GridSize - 1 && 
-			Grid[Hero.pos.y + 1][Hero.pos.x] == block)
-		
+		if (Hero.pos.y < GridSize - 1 &&
+			can_move_dir(Hero.pos.y + 1, Hero.pos.x))
 		{
 			Grid[Hero.pos.y][Hero.pos.x] = block;
 		
@@ -427,6 +430,7 @@ public class GridBlocksGame extends ListenerAdapter{
 			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
 		}
 		else if (Hero.pos.y < GridSize - 2 &&
+				can_move_dir(Hero.pos.y + 2, Hero.pos.x) &&
 				downNum != null) 
 		{
 			// Move the hero
@@ -447,8 +451,8 @@ public class GridBlocksGame extends ListenerAdapter{
 		// Check if there is a number in the moving direction
 		GridNumberBlock upNum = get_num_at_position(Hero.pos.y - 1, Hero.pos.x);
 		
-		if (Hero.pos.y > 0 && 
-			Grid[Hero.pos.y - 1][Hero.pos.x] == block)
+		if (Hero.pos.y > 0 &&
+			can_move_dir(Hero.pos.y - 1, Hero.pos.x))
 		
 		{
 			Grid[Hero.pos.y][Hero.pos.x] = block;
@@ -458,6 +462,7 @@ public class GridBlocksGame extends ListenerAdapter{
 			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
 		}
 		else if (Hero.pos.y > 1 &&
+				can_move_dir(Hero.pos.y - 2, Hero.pos.x) &&
 				upNum != null)
 		{
 			// Move the hero
@@ -472,6 +477,24 @@ public class GridBlocksGame extends ListenerAdapter{
 			Grid[upNum.pos.y][upNum.pos.x] = upNum.num_icon;
 		}
 		
+	}
+	
+	public Boolean can_move_dir(int y, int x)
+	{
+		if (Grid[y][x] == block)
+		{
+			return true;
+		}
+		else if (Grid[y][x] == ans_quotient.icon_string)
+		{
+			return true;
+		}
+		else if (Grid[y][x] == ans_remainder.icon_string)
+		{
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public GridNumberBlock get_num_at_position(int y, int x)
@@ -625,5 +648,18 @@ public class GridBlocksGame extends ListenerAdapter{
 		}
 		
 		return false;
+	}
+	
+	public void add_answer_icons()
+	{
+		if (Grid[ans_quotient.pos.y][ans_quotient.pos.x] == block)
+		{
+			Grid[ans_quotient.pos.y][ans_quotient.pos.x] = ans_quotient.icon_string;
+		}
+		
+		if (Grid[ans_remainder.pos.y][ans_remainder.pos.x] == block)
+		{
+			Grid[ans_remainder.pos.y][ans_remainder.pos.x] = ans_remainder.icon_string;
+		}
 	}
 }
