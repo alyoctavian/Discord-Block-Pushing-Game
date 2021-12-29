@@ -245,9 +245,9 @@ public class GridBlocksGame extends ListenerAdapter{
 			SendGridMessage(event.getChannel());
 		}
 		
-		if (args[0].equalsIgnoreCase(BotStartup.prefix + "simple"))
+		if (args[0].equalsIgnoreCase(BotStartup.prefix + "help"))
 		{
-			CreateSimpleQuestion();
+			send_help_message(event.getChannel());
 		}
 	}
 		
@@ -816,5 +816,46 @@ public class GridBlocksGame extends ListenerAdapter{
 		{
 			System.out.println("Invalid submission \n");
 		}
+	}
+	
+	public void send_help_message(TextChannel channel)
+	{
+		String help_string = 
+		"🔘 Complete the given equations by moving the number blocks into the " + 
+		":regional_indicator_q:" + " (quotient) and " + ":regional_indicator_r:" + " (remainder) blocks. \n";
+		
+		help_string += "🔘 To move your hero, select the arrows emotes below the maze " + 
+		ArrowLeft + ArrowRight +ArrowDown + ArrowUp + "\n";
+		
+		help_string += "🔘 If you get stuck, use the " + RefreshArrows + " button \n";
+		
+		help_string += "🔘 The Giant " + giant + " eats heroes and number blocks, avoid it at all costs! \n";
+		
+		help_string += "🔘 You can cross over " + ":regional_indicator_q:" + " and " + 
+		":regional_indicator_r:" + " blocks.\n🔘 Moving towards number blocks will push them. \n";
+		
+		help_string += "🔘 When the numbers are in their place, use the " + submit_icon + " to submit your answer. \n";
+		
+		help_string += "🔘 !help -- brings up the help panel \n" +
+					   "🔘 !select -- lets you select the hero icon \n";
+		
+		EmbedBuilder embed = new EmbedBuilder();
+		
+		embed.setTitle("Help Panel");
+		
+		embed.setDescription(help_string);
+		
+		if (channel.getGuild().getOwner() != null)
+		{
+			embed.setFooter("Game Created by Octavian", channel.getGuild().getOwner().getUser().getAvatarUrl());
+		}
+		else 
+		{
+			System.out.println("Can't create Embed footer \n");
+		}
+		
+		embed.setColor(Color.GREEN);
+		
+		channel.sendMessageEmbeds(embed.build()).complete();
 	}
 }
