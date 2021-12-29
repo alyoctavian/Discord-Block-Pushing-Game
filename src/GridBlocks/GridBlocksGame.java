@@ -3,13 +3,17 @@ package GridBlocks;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
 
 import Main.BotStartup;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -42,6 +46,9 @@ public class GridBlocksGame extends ListenerAdapter{
 	// Lock Emote String
 	String Lock = "🔐";
 	
+	// Submit Emote String
+	String submit_icon = "✅";
+	
 	// Select character message
 	Message SelectHeroMsg = null;
 	
@@ -62,6 +69,9 @@ public class GridBlocksGame extends ListenerAdapter{
 	// Expected answers
 	AnswerQuotient ans_quotient;
 	AnswerRemainder ans_remainder;
+	int divident_val;
+	
+	int divisor_val;
 	
 	// Direction enum
 	enum direction {
@@ -184,6 +194,10 @@ public class GridBlocksGame extends ListenerAdapter{
 		add_answer_icons();
 		
 		GridString = "";
+		
+		// Add the question string
+		GridString = "Give the quotient **q** and remainder **r** according to the Division Theorem when the integer " +
+					   divident_val + " is divided by the positive integer " + divisor_val + ".\n";
 		
 		for(int i = 0; i < GridSize; i++)
 		{
@@ -314,6 +328,68 @@ public class GridBlocksGame extends ListenerAdapter{
 		}*/
 	}
 	
+	@Override
+	public void onGuildMemberJoin(GuildMemberJoinEvent event)
+	{
+		// Create the room under the Games category
+		// Looks for categories named Game and stores the first (and the only) one
+		net.dv8tion.jda.api.entities.Category gamesCategory = event.getGuild().getCategoriesByName("Games", true).get(0);
+		
+		// Gets the text channels under the Games category
+		List<TextChannel> categoryChannels = gamesCategory.getTextChannels();
+		
+		Boolean channelExists = false;
+		
+		for (int i = 0; i < categoryChannels.size(); i++)
+		{
+			TextChannel game_channel = categoryChannels.get(i);
+			
+			if (game_channel.getName().equalsIgnoreCase("game1") && 
+					game_channel.getTopic().equalsIgnoreCase(event.getUser().getId()))
+			{
+				channelExists = true;
+				
+				// Used for Debug purposes
+				event.getGuild().getDefaultChannel().sendMessage("Channel Exists").queue();
+				
+				// Add permissions to the previous channel
+				game_channel.getManager().putMemberPermissionOverride(event.getMember().getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
+				
+				return;
+			}
+		}
+		
+		if (!channelExists)
+		{
+			Guild guild = event.getMember().getGuild();
+			
+			String name = "game1";
+	
+			gamesCategory.createTextChannel(name)
+	         .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
+	         .addPermissionOverride(guild.getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
+	         .complete(); // this actually sends the request to discord.
+		    
+			categoryChannels = gamesCategory.getTextChannels();
+			
+			for (int i = 0; i < categoryChannels.size(); i++)
+			{
+				if (categoryChannels.get(i).getName().equalsIgnoreCase("game1") && event.getMember().hasAccess(categoryChannels.get(i)))
+				{
+					categoryChannels.get(i).getManager().setTopic(event.getUser().getId()).complete();
+					
+					// Used for Debug purposes
+					event.getGuild().getDefaultChannel().sendMessage("Topic Set").queue();
+					
+					break;
+				}
+			}
+		    
+		    // Used for Debug purposes
+		    event.getGuild().getDefaultChannel().sendMessage("Channel Created").queue();
+		}
+	}
+	
 	public void SendGridMessage(TextChannel channel)
 	{
 		channel.sendMessage(GridString).queue(message -> {
@@ -323,6 +399,14 @@ public class GridBlocksGame extends ListenerAdapter{
 			message.addReaction(ArrowDown).queue();
 			message.addReaction(ArrowUp).queue();
 			message.addReaction(RefreshArrows).queue();
+			
+			// Add the submit emote
+			if (get_num_at_position(ans_quotient.pos.y, ans_quotient.pos.x) != null &&
+					get_num_at_position(ans_remainder.pos.y, ans_remainder.pos.x) != null)
+			{
+				message.addReaction(submit_icon).queue();
+			}
+			
 			});
 	}
 
@@ -515,9 +599,9 @@ public class GridBlocksGame extends ListenerAdapter{
 	{
 		Random rand = new Random();
 		
-		int divident_val = rand.ints(0, 10).findFirst().getAsInt();
+		divident_val = rand.ints(0, 10).findFirst().getAsInt();
 		
-		int divisor_val = rand.ints(2, 10).findFirst().getAsInt();
+		divisor_val = rand.ints(2, 10).findFirst().getAsInt();
 		
 		System.out.println("Random divdent " + divident_val + '\n' +
 							"Random Divisor " + divisor_val + '\n');

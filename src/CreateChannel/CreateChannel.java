@@ -12,6 +12,8 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class CreateChannel extends ListenerAdapter{
 	
+	// TODO: Create a channel when the user joins and send the first exercise and the help information
+	// TODO: Move the creation of the channel to the game class
 	@Override
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event)
 	{

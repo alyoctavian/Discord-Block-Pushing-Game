@@ -30,7 +30,7 @@ public class BotStartup {
 		jda.addEventListeners(new GuildMemberJoin());
 		jda.addEventListeners(new GuildMemberLeave());
 		jda.addEventListeners(new GuildMessageReceived());
-		//jda.addEventListeners(new GuildMessageReactionAdd());
+
 		jda.addEventListeners(new PointsSystem());
 		jda.addEventListeners(new CreateChannel());
 		
