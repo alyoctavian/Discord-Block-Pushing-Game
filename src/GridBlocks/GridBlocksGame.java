@@ -83,6 +83,9 @@ public class GridBlocksGame extends ListenerAdapter{
 	
 	public GridBlocksGame() 
 	{
+		GridString = "";
+		Grid = null;
+		
 		Hero = new GridViking();
 		
 		ans_quotient = new AnswerQuotient();
@@ -232,24 +235,7 @@ public class GridBlocksGame extends ListenerAdapter{
 		
 		if (args[0].equalsIgnoreCase(BotStartup.prefix + "select"))
 		{
-			EmbedBuilder embed = new EmbedBuilder();
-			
-			embed.setTitle("Select your character");
-			
-			embed.setFooter("Game Created by Octavian", event.getGuild().getOwner().getUser().getAvatarUrl());
-			
-			embed.setColor(Color.GREEN);
-			
-			event.getChannel().sendMessageEmbeds(embed.build()).queue(message -> {
-				SelectHeroMsg = message;
-				
-				message.addReaction(ReactViking1).queue();
-				message.addReaction(ReactViking2).queue();
-				message.addReaction(ReactViking3).queue();
-				message.addReaction(ReactViking4).queue();
-				});
-			
-			event.getChannel().sendMessage(Viking1 + " " + Viking2 + " " + Viking3 + " " + Viking4).complete();
+			send_select_message(event.getChannel());
 		}
 		
 		if (args[0].equalsIgnoreCase(BotStartup.prefix + "grid"))
@@ -277,22 +263,7 @@ public class GridBlocksGame extends ListenerAdapter{
 		// Selecting the Hero Icon
 		if (SelectHeroMsg != null && event.getMessageId().equalsIgnoreCase(SelectHeroMsg.getId()))
 		{
-			if (event.getReactionEmote().getName().equalsIgnoreCase("viking1"))
-			{
-				Hero.HeroIcon = Viking1;
-			}
-			else if (event.getReactionEmote().getName().equalsIgnoreCase("viking2"))
-			{
-				Hero.HeroIcon = Viking2;
-			}
-			else if (event.getReactionEmote().getName().equalsIgnoreCase("viking3"))
-			{
-				Hero.HeroIcon = Viking3;
-			}
-			else if (event.getReactionEmote().getName().equalsIgnoreCase("viking4"))
-			{
-				Hero.HeroIcon = Viking4;
-			}
+			select_hero(event);
 		}
 		else if (GridMsg != null && event.getMessageId().equalsIgnoreCase(GridMsg.getId()))
 		{
@@ -317,6 +288,10 @@ public class GridBlocksGame extends ListenerAdapter{
 				CreateGrid();
 				
 				SendGridMessage(event.getChannel());
+			}
+			else if (event.getReactionEmote().getName().equalsIgnoreCase(submit_icon))
+			{
+				submit_answer(event);
 			}
 		}
 		
@@ -378,6 +353,9 @@ public class GridBlocksGame extends ListenerAdapter{
 				{
 					categoryChannels.get(i).getManager().setTopic(event.getUser().getId()).complete();
 					
+					// Send the select character message
+					send_select_message(categoryChannels.get(i));
+					
 					// Used for Debug purposes
 					event.getGuild().getDefaultChannel().sendMessage("Topic Set").queue();
 					
@@ -410,6 +388,70 @@ public class GridBlocksGame extends ListenerAdapter{
 			});
 	}
 
+	public void send_select_message(TextChannel channel)
+	{
+		EmbedBuilder embed = new EmbedBuilder();
+		
+		embed.setTitle("Select your character");
+		
+		if (channel.getGuild().getOwner() != null)
+		{
+			embed.setFooter("Game Created by Octavian", channel.getGuild().getOwner().getUser().getAvatarUrl());
+		}
+		else 
+		{
+			System.out.println("Can't create Embed footer \n");
+		}
+		
+		embed.setColor(Color.GREEN);
+		
+		channel.sendMessageEmbeds(embed.build()).queue(message -> {
+			SelectHeroMsg = message;
+			
+			message.addReaction(ReactViking1).queue();
+			message.addReaction(ReactViking2).queue();
+			message.addReaction(ReactViking3).queue();
+			message.addReaction(ReactViking4).queue();
+			});
+		
+		channel.sendMessage(Viking1 + " " + Viking2 + " " + Viking3 + " " + Viking4).complete();
+	}
+	
+	public void select_hero(GuildMessageReactionAddEvent event)
+	{
+		if (event.getReactionEmote().getName().equalsIgnoreCase("viking1"))
+		{
+			Hero.HeroIcon = Viking1;
+		}
+		else if (event.getReactionEmote().getName().equalsIgnoreCase("viking2"))
+		{
+			Hero.HeroIcon = Viking2;
+		}
+		else if (event.getReactionEmote().getName().equalsIgnoreCase("viking3"))
+		{
+			Hero.HeroIcon = Viking3;
+		}
+		else if (event.getReactionEmote().getName().equalsIgnoreCase("viking4"))
+		{
+			Hero.HeroIcon = Viking4;
+		}
+		
+		// Send the message
+		event.getChannel().sendMessage("You selected " + Hero.HeroIcon + "!").complete();
+		
+		if (Grid == null)
+		{
+			CreateGrid();
+			SendGridMessage(event.getChannel());
+		}
+		else 
+		{
+			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
+			CreateGridString();
+			SendGridMessage(event.getChannel());
+		}
+	}
+	
 	public void MoveHero(direction dir, TextChannel channel)
 	{
 		if (dir == direction.RIGHT)
@@ -744,6 +786,35 @@ public class GridBlocksGame extends ListenerAdapter{
 		if (Grid[ans_remainder.pos.y][ans_remainder.pos.x] == block)
 		{
 			Grid[ans_remainder.pos.y][ans_remainder.pos.x] = ans_remainder.icon_string;
+		}
+	}
+	
+	public void submit_answer(GuildMessageReactionAddEvent event)
+	{
+		// Check if the answer is correct
+		if (get_num_at_position(ans_quotient.pos.y, ans_quotient.pos.x) != null &&
+			get_num_at_position(ans_remainder.pos.y, ans_remainder.pos.x) != null)
+		{
+			int q_val = get_num_at_position(ans_quotient.pos.y, ans_quotient.pos.x).num_value;
+			int r_val = get_num_at_position(ans_remainder.pos.y, ans_remainder.pos.x).num_value;
+			
+			String string_msg = "";
+			
+			if (q_val == ans_quotient.expected_val &&
+				r_val == ans_remainder.expected_val)
+			{
+				string_msg = "Well Done";
+			}
+			else 
+			{
+				string_msg = "Wrong Answer! Try again!";
+			}
+			
+			event.getChannel().sendMessage(string_msg).complete();
+		}
+		else 
+		{
+			System.out.println("Invalid submission \n");
 		}
 	}
 }
