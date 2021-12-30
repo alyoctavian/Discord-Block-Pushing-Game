@@ -172,7 +172,7 @@ public class GridBlocksGame extends ListenerAdapter{
 		int x = numRandom.nextInt(GridSize);
 		int y = numRandom.nextInt(GridSize);
 		
-		if (isNearEdge(x, y))
+		if (isNearEdge(x, y) || !can_add_block(x, y))
 		{
 			AddNumber(val);
 			return;
@@ -857,5 +857,71 @@ public class GridBlocksGame extends ListenerAdapter{
 		embed.setColor(Color.GREEN);
 		
 		channel.sendMessageEmbeds(embed.build()).complete();
+	}
+	
+	public Boolean can_add_block(int x, int y)
+	{
+		int blockers_nearby = 0;
+		
+		if (!can_move_over(x, y - 1))
+		{
+			blockers_nearby ++;
+		}
+		
+		if (!can_move_over(x + 1, y - 1))
+		{
+			blockers_nearby ++;
+		}
+		
+		if (!can_move_over(x + 1, y))
+		{
+			blockers_nearby ++;
+		}
+		
+		if (!can_move_over(x + 1, y + 1))
+		{
+			blockers_nearby ++;
+		}
+		
+		if (!can_move_over(x, y + 1))
+		{
+			blockers_nearby ++;
+		}
+		
+		if (!can_move_over(x - 1, y + 1))
+		{
+			blockers_nearby ++;
+		}
+		
+		if (!can_move_over(x - 1, y))
+		{
+			blockers_nearby ++;
+		}
+		
+		if (!can_move_over(x - 1, y - 1))
+		{
+			blockers_nearby ++;
+		}
+		
+		if (blockers_nearby > 2)
+		{
+			return false;
+		}
+		else 
+		{
+			return true;
+		}
+	}
+	
+	public Boolean can_move_over(int x, int y)
+	{
+		if (Grid[y][x] == block ||
+			Grid[y][x] == ans_quotient.icon_string ||
+			Grid[y][x] == ans_remainder.icon_string)
+		{
+			return true;
+		}
+		
+		return false;
 	}
 }
