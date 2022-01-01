@@ -2,7 +2,6 @@ package GridBlocks;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
@@ -22,7 +21,7 @@ public class GridBlocksGame extends ListenerAdapter{
 
 	// Basic Grid Emotes
 	String block = "🔳";
-	String giant = "👹";
+	GiantBlock giantBlock;
 	
 	// Reaction Emote Strings
 	String ReactViking1 = "viking1:922507879402061895";
@@ -73,6 +72,9 @@ public class GridBlocksGame extends ListenerAdapter{
 	
 	int divisor_val;
 	
+	// Store the game channel
+	TextChannel channel_game;
+	
 	// Direction enum
 	enum direction {
 		LEFT,
@@ -91,6 +93,8 @@ public class GridBlocksGame extends ListenerAdapter{
 		ans_quotient = new AnswerQuotient();
 		
 		ans_remainder = new AnswerRemainder();
+		
+		giantBlock = new GiantBlock();
 	}
 	
 	public void CreateGrid()
@@ -138,9 +142,12 @@ public class GridBlocksGame extends ListenerAdapter{
 		int i = numRandom.nextInt(GridSize);
 		int j = numRandom.nextInt(GridSize);
 		
-		if (Grid[i][j].equals(block))
+		giantBlock.pos.x = i;
+		giantBlock.pos.y = j;
+		
+		if (Grid[giantBlock.pos.y][giantBlock.pos.x].equals(block))
 		{
-			Grid[i][j] = giant;
+			Grid[giantBlock.pos.y][giantBlock.pos.x] = giantBlock.icon_string;
 		}
 		else 
 		{
@@ -194,7 +201,11 @@ public class GridBlocksGame extends ListenerAdapter{
 	
 	public void CreateGridString()
 	{
+		Hero.is_alive = true;
+		
 		add_answer_icons();
+		
+		check_monster();
 		
 		GridString = "";
 		
@@ -233,6 +244,13 @@ public class GridBlocksGame extends ListenerAdapter{
 			return;
 		}
 		
+		if (!event.getChannel().getTopic().equalsIgnoreCase(event.getAuthor().getId()))
+		{
+			return;
+		}
+		
+		channel_game = event.getChannel();
+		
 		if (args[0].equalsIgnoreCase(BotStartup.prefix + "select"))
 		{
 			send_select_message(event.getChannel());
@@ -259,6 +277,13 @@ public class GridBlocksGame extends ListenerAdapter{
 		{
 			return;
 		}
+		
+		if (!event.getChannel().getTopic().equalsIgnoreCase(event.getUser().getId()))
+		{
+			return;
+		}
+		
+		channel_game = event.getChannel();
 		
 		// Selecting the Hero Icon
 		if (SelectHeroMsg != null && event.getMessageId().equalsIgnoreCase(SelectHeroMsg.getId()))
@@ -327,8 +352,11 @@ public class GridBlocksGame extends ListenerAdapter{
 				// Used for Debug purposes
 				event.getGuild().getDefaultChannel().sendMessage("Channel Exists").queue();
 				
+				// Store channel
+				channel_game = game_channel;
+				
 				// Add permissions to the previous channel
-				game_channel.getManager().putMemberPermissionOverride(event.getMember().getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
+				game_channel.getManager().putMemberPermissionOverride(event.getMember().getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL), null).queue();
 				
 				return;
 			}
@@ -351,10 +379,13 @@ public class GridBlocksGame extends ListenerAdapter{
 			{
 				if (categoryChannels.get(i).getName().equalsIgnoreCase("game1") && event.getMember().hasAccess(categoryChannels.get(i)))
 				{
-					categoryChannels.get(i).getManager().setTopic(event.getUser().getId()).complete();
+					categoryChannels.get(i).getManager().setTopic(event.getUser().getId()).queue();
 					
 					// Send the select character message
 					send_select_message(categoryChannels.get(i));
+					
+					// Store channel
+					channel_game = categoryChannels.get(i);
 					
 					// Used for Debug purposes
 					event.getGuild().getDefaultChannel().sendMessage("Topic Set").queue();
@@ -372,10 +403,13 @@ public class GridBlocksGame extends ListenerAdapter{
 	{
 		channel.sendMessage(GridString).queue(message -> {
 			GridMsg = message;
-			message.addReaction(ArrowLeft).queue();
-			message.addReaction(ArrowRight).queue();
-			message.addReaction(ArrowDown).queue();
-			message.addReaction(ArrowUp).queue();
+			if (Hero.is_alive)
+			{
+				message.addReaction(ArrowLeft).queue();
+				message.addReaction(ArrowRight).queue();
+				message.addReaction(ArrowDown).queue();
+				message.addReaction(ArrowUp).queue();
+			}
 			message.addReaction(RefreshArrows).queue();
 			
 			// Add the submit emote
@@ -414,7 +448,7 @@ public class GridBlocksGame extends ListenerAdapter{
 			message.addReaction(ReactViking4).queue();
 			});
 		
-		channel.sendMessage(Viking1 + " " + Viking2 + " " + Viking3 + " " + Viking4).complete();
+		channel.sendMessage(Viking1 + " " + Viking2 + " " + Viking3 + " " + Viking4).queue();
 	}
 	
 	public void select_hero(GuildMessageReactionAddEvent event)
@@ -437,7 +471,7 @@ public class GridBlocksGame extends ListenerAdapter{
 		}
 		
 		// Send the message
-		event.getChannel().sendMessage("You selected " + Hero.HeroIcon + "!").complete();
+		event.getChannel().sendMessage("You selected " + Hero.HeroIcon + "!").queue();
 		
 		if (Grid == null)
 		{
@@ -454,6 +488,11 @@ public class GridBlocksGame extends ListenerAdapter{
 	
 	public void MoveHero(direction dir, TextChannel channel)
 	{
+		if (!Hero.is_alive)
+		{
+			return;
+		}
+		
 		if (dir == direction.RIGHT)
 		{
 			MoveRight();
@@ -616,6 +655,10 @@ public class GridBlocksGame extends ListenerAdapter{
 			return true;
 		}
 		else if (Grid[y][x] == ans_remainder.icon_string)
+		{
+			return true;
+		}
+		else if (Grid[y][x] == giantBlock.icon_string)
 		{
 			return true;
 		}
@@ -810,7 +853,7 @@ public class GridBlocksGame extends ListenerAdapter{
 				string_msg = "Wrong Answer! Try again!";
 			}
 			
-			event.getChannel().sendMessage(string_msg).complete();
+			event.getChannel().sendMessage(string_msg).queue();
 		}
 		else 
 		{
@@ -829,7 +872,7 @@ public class GridBlocksGame extends ListenerAdapter{
 		
 		help_string += "🔘 If you get stuck, use the " + RefreshArrows + " button \n";
 		
-		help_string += "🔘 The Giant " + giant + " eats heroes and number blocks, avoid it at all costs! \n";
+		help_string += "🔘 The Giant " + giantBlock.icon_string + " eats heroes and number blocks, avoid it at all costs! \n";
 		
 		help_string += "🔘 You can cross over " + ":regional_indicator_q:" + " and " + 
 		":regional_indicator_r:" + " blocks.\n🔘 Moving towards number blocks will push them. \n";
@@ -856,9 +899,11 @@ public class GridBlocksGame extends ListenerAdapter{
 		
 		embed.setColor(Color.GREEN);
 		
-		channel.sendMessageEmbeds(embed.build()).complete();
+		channel.sendMessageEmbeds(embed.build()).queue();
 	}
 	
+	// Checks if a number can be moved over a block
+	// Not the same as can_move_dir
 	public Boolean can_add_block(int x, int y)
 	{
 		int blockers_nearby = 0;
@@ -923,5 +968,46 @@ public class GridBlocksGame extends ListenerAdapter{
 		}
 		
 		return false;
+	}
+	
+	public void check_monster()
+	{
+		EmbedBuilder embed = new EmbedBuilder();
+		
+		embed.setColor(Color.RED);
+		
+		boolean send_embed = false;
+		
+		// Check if the hero is eaten by the giant
+		if (Hero.pos.equals(giantBlock.pos))
+		{		
+			embed.setDescription("The hero was eaten by the fierce Giant! Try again!\n");
+			
+			send_embed = true;
+			
+			Hero.is_alive = false;
+		}
+		
+		// Check if numbers are eaten by the giant
+		for (int i = 0; i < numbers_list.size(); i++)
+		{
+			if (numbers_list.get(i).pos.equals(giantBlock.pos))
+			{
+				embed.setDescription("The number "  + numbers_list.get(i).num_value +  " was eaten by the fierce Giant! \n");
+				
+				send_embed = true;
+				
+				numbers_list.remove(i);
+				
+				break;
+			}
+		}
+		
+		Grid[giantBlock.pos.y][giantBlock.pos.x] = giantBlock.icon_string;
+		
+		if (send_embed)
+		{
+			channel_game.sendMessageEmbeds(embed.build()).queue();
+		}
 	}
 }

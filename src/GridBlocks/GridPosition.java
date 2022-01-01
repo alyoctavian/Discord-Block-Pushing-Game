@@ -9,4 +9,14 @@ public class GridPosition {
 		x = init_x;
 		y = init_y;
 	}
+	
+	public boolean equals(GridPosition other_pos)
+	{
+		if (other_pos.x == x && other_pos.y == y)
+		{
+			return true;
+		}
+		
+		return false;
+	}
 }
