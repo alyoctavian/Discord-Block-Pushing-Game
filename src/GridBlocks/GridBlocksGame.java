@@ -110,6 +110,8 @@ public class GridBlocksGame extends ListenerAdapter{
 		giantBlock = new GiantBlock();
 		
 		current_difficulty = 2;
+		
+		channel_game = null;
 	}
 	
 	public void CreateGrid()
@@ -211,12 +213,12 @@ public class GridBlocksGame extends ListenerAdapter{
 		}
 	}
 	
-	public void AddNumber(int number)
+	public void AddNumber(int number_to_add)
 	{
 		do 
 		{	
-			int val = number%10;
-			number /= 10;
+			int val = number_to_add%10;
+			number_to_add /= 10;
 			
 			Random numRandom = new Random();
 			
@@ -226,22 +228,26 @@ public class GridBlocksGame extends ListenerAdapter{
 			if (isNearEdge(x, y) || !can_add_block(x, y))
 			{
 				AddNumber(val);
-				return;
+				continue;
 			}
 			
 			if (Grid[y][x].equals(block))
 			{
-				GridNumberBlock num = new GridNumberBlock(new GridPosition(x, y), val);
+				GridNumberBlock block_num = new GridNumberBlock(new GridPosition(x, y), val);
 				
-				Grid[y][x] = num.num_icon;
+				Grid[y][x] = block_num.num_icon;
 				
-				numbers_list.add(num);
+				numbers_list.add(block_num);
+				
+				continue;
 			}
 			else 
 			{
 				AddNumber(val);
+				continue;
 			}
-		} while (number != 0);
+			
+		} while (number_to_add != 0);
 	}
 	
 	public void CreateGridString()
@@ -289,12 +295,20 @@ public class GridBlocksGame extends ListenerAdapter{
 			return;
 		}
 		
-		if (!event.getChannel().getTopic().equalsIgnoreCase(event.getAuthor().getId()))
+		if (!event.getMember().hasAccess(event.getChannel()))
 		{
 			return;
 		}
+		// TODO: Check this
+		/*if (!event.getChannel().getTopic().equalsIgnoreCase(event.getAuthor().getId()))
+		{
+			return;
+		}*/
 		
-		channel_game = event.getChannel();
+		if (channel_game == null)
+		{
+			channel_game = event.getChannel();
+		}
 		
 		if (args[0].equalsIgnoreCase(BotStartup.prefix + "select"))
 		{
@@ -323,12 +337,20 @@ public class GridBlocksGame extends ListenerAdapter{
 			return;
 		}
 		
-		if (!event.getChannel().getTopic().equalsIgnoreCase(event.getUser().getId()))
+		if (!event.getMember().hasAccess(event.getChannel()))
 		{
 			return;
 		}
+		// TODO: Check this
+		/*if (!event.getChannel().getTopic().equalsIgnoreCase(event.getUser().getId()))
+		{
+			return;
+		}*/
 		
-		channel_game = event.getChannel();
+		if (channel_game == null)
+		{
+			channel_game = event.getChannel();
+		}
 		
 		// Selecting the Hero Icon
 		if (SelectHeroMsg != null && event.getMessageId().equalsIgnoreCase(SelectHeroMsg.getId()))
@@ -398,7 +420,10 @@ public class GridBlocksGame extends ListenerAdapter{
 				event.getGuild().getDefaultChannel().sendMessage("Channel Exists").queue();
 				
 				// Store channel
-				channel_game = game_channel;
+				if(channel_game == null)
+				{
+					channel_game = game_channel;
+				}
 				
 				// Add permissions to the previous channel
 				game_channel.getManager().putMemberPermissionOverride(event.getMember().getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL), null).queue();
@@ -430,7 +455,10 @@ public class GridBlocksGame extends ListenerAdapter{
 					send_select_message(categoryChannels.get(i));
 					
 					// Store channel
-					channel_game = categoryChannels.get(i);
+					if (channel_game == null)
+					{
+						channel_game = categoryChannels.get(i);
+					}
 					
 					// Used for Debug purposes
 					event.getGuild().getDefaultChannel().sendMessage("Topic Set").queue();
@@ -792,55 +820,45 @@ public class GridBlocksGame extends ListenerAdapter{
 		
 		Random numRandom = new Random();
 		
-		int randomVal = numRandom.nextInt(Math.min(ans_quotient.expected_val + 4, 10));
-		int loops_try = 0;
+		int num_to_add = 3;
 		
-		// Add three more random  numbers
-		while (is_value_in_list(randomVal))
+		switch (diff_levels[current_difficulty]) 
 		{
-			randomVal = numRandom.nextInt(Math.min(ans_quotient.expected_val + 4, 10));
-			
-			loops_try += 1;
-			
-			if (loops_try > 4)
-			{
-				randomVal = numRandom.nextInt(10);
-			}
+		case DIF_EASY:
+			num_to_add = 5 - numbers_list.size();
+			break;
+		case DIF_MEDIUM:
+			num_to_add = 9 - numbers_list.size();
+			break;
+		case DIF_HARD:
+			num_to_add = 14 - numbers_list.size();
+			break;
+		default:
+			num_to_add = 3;
+			System.out.println("DIFFICULTY ERROR!");
+			break;
 		}
 		
-		AddNumber(randomVal);
-		
-		loops_try = 0;
-		
-		while (is_value_in_list(randomVal))
+		for (int i = 0; i < num_to_add; i++)
 		{
-			randomVal = numRandom.nextInt(Math.min(ans_remainder.expected_val + 4, 10));
+			int randomVal = numRandom.nextInt(Math.min(ans_quotient.expected_val + 4, 10));
+			int loops_try = 0;
 			
-			loops_try += 1;
-			
-			if (loops_try > 4)
+			// Add three more random  numbers
+			while (is_value_in_list(randomVal))
 			{
-				randomVal = numRandom.nextInt(10);
+				randomVal = numRandom.nextInt(Math.min(ans_quotient.expected_val + 4, 10));
+				
+				loops_try += 1;
+				
+				if (loops_try > 4)
+				{
+					randomVal = numRandom.nextInt(10);
+				}
 			}
-		}
-		
-		AddNumber(randomVal);
-		
-		loops_try = 0;
-		
-		while (is_value_in_list(randomVal))
-		{
-			randomVal = numRandom.nextInt(Math.min(ans_quotient.expected_val + 4, 10));
 			
-			loops_try += 1;
-			
-			if (loops_try > 4)
-			{
-				randomVal = numRandom.nextInt(10);
-			}
+			AddNumber(randomVal);
 		}
-		
-		AddNumber(randomVal);
 	}
 	
 	public void add_quotient()
@@ -861,6 +879,16 @@ public class GridBlocksGame extends ListenerAdapter{
 			}
 			else 
 			{
+				for (int j = 0; j < ans_quotient.num_blocks; j++)
+				{
+					int l_y = ans_quotient.pos[j].y;
+					int l_x = ans_quotient.pos[j].x;
+					
+					if (Grid[l_y][l_x].equalsIgnoreCase(ans_quotient.icon_string))
+					{
+						Grid[l_y][l_x] = block;
+					}
+				}
 				add_quotient();
 				break;
 			}
@@ -885,6 +913,16 @@ public class GridBlocksGame extends ListenerAdapter{
 			}
 			else 
 			{
+				for (int j = 0; j < ans_remainder.num_blocks; j++)
+				{
+					int l_y = ans_remainder.pos[j].y;
+					int l_x = ans_remainder.pos[j].x;
+					
+					if (Grid[l_y][l_x].equalsIgnoreCase(ans_remainder.icon_string))
+					{
+						Grid[l_y][l_x] = block;
+					}
+				}
 				add_remainder();
 				break;
 			}
