@@ -75,6 +75,14 @@ public class GridBlocksGame extends ListenerAdapter{
 	// Store the game channel
 	TextChannel channel_game;
 	
+	// Current game difficulty for the game
+	public enum difficulty
+	{
+		DIF_EASY,
+		DIF_MEDIUM,
+		DIF_HARD
+	}
+	
 	// Direction enum
 	enum direction {
 		LEFT,
@@ -83,6 +91,9 @@ public class GridBlocksGame extends ListenerAdapter{
 		UP
 	}
 	
+	difficulty current_difficulty;
+	
+	
 	public GridBlocksGame() 
 	{
 		GridString = "";
@@ -90,11 +101,11 @@ public class GridBlocksGame extends ListenerAdapter{
 		
 		Hero = new GridViking();
 		
-		ans_quotient = new AnswerQuotient();
-		
 		ans_remainder = new AnswerRemainder();
 		
 		giantBlock = new GiantBlock();
+		
+		current_difficulty = difficulty.DIF_EASY;
 	}
 	
 	public void CreateGrid()
@@ -413,7 +424,7 @@ public class GridBlocksGame extends ListenerAdapter{
 			message.addReaction(RefreshArrows).queue();
 			
 			// Add the submit emote
-			if (get_num_at_position(ans_quotient.pos.y, ans_quotient.pos.x) != null &&
+			if (get_quotient_value() != null &&
 					get_num_at_position(ans_remainder.pos.y, ans_remainder.pos.x) != null)
 			{
 				message.addReaction(submit_icon).queue();
@@ -682,6 +693,8 @@ public class GridBlocksGame extends ListenerAdapter{
 	
 	public void CreateSimpleQuestion()
 	{
+		ans_quotient = new AnswerQuotient(1);
+		
 		Random rand = new Random();
 		
 		divident_val = rand.ints(0, 10).findFirst().getAsInt();
@@ -773,16 +786,20 @@ public class GridBlocksGame extends ListenerAdapter{
 		int x = numRandom.nextInt(GridSize);
 		int y = numRandom.nextInt(GridSize);
 		
-		if (Grid[y][x].equals(block))
+		for (int i = 0; i < ans_quotient.num_blocks; i++)
 		{
-			ans_quotient.pos.x = x;
-			ans_quotient.pos.y = y;
-			
-			Grid[y][x] = ans_quotient.icon_string;
-		}
-		else 
-		{
-			add_quotient();
+			if (Grid[y][x + i].equals(block))
+			{
+				ans_quotient.pos[i].x = x;
+				ans_quotient.pos[i].y = y;
+				
+				Grid[y][x + i] = ans_quotient.icon_string;
+			}
+			else 
+			{
+				add_quotient();
+				break;
+			}
 		}
 	}
 	
@@ -819,11 +836,15 @@ public class GridBlocksGame extends ListenerAdapter{
 		return false;
 	}
 	
+	// If another icon - number or player - moves out, add the Q or R icons back
 	public void add_answer_icons()
 	{
-		if (Grid[ans_quotient.pos.y][ans_quotient.pos.x] == block)
+		for (int i = 0; i < ans_quotient.num_blocks; i++)
 		{
-			Grid[ans_quotient.pos.y][ans_quotient.pos.x] = ans_quotient.icon_string;
+			if (Grid[ans_quotient.pos[i].y][ans_quotient.pos[i].x] == block)
+			{
+				Grid[ans_quotient.pos[i].y][ans_quotient.pos[i].x] = ans_quotient.icon_string;
+			}
 		}
 		
 		if (Grid[ans_remainder.pos.y][ans_remainder.pos.x] == block)
@@ -835,10 +856,10 @@ public class GridBlocksGame extends ListenerAdapter{
 	public void submit_answer(GuildMessageReactionAddEvent event)
 	{
 		// Check if the answer is correct
-		if (get_num_at_position(ans_quotient.pos.y, ans_quotient.pos.x) != null &&
+		if (get_quotient_value() != null &&
 			get_num_at_position(ans_remainder.pos.y, ans_remainder.pos.x) != null)
 		{
-			int q_val = get_num_at_position(ans_quotient.pos.y, ans_quotient.pos.x).num_value;
+			int q_val = get_quotient_value();
 			int r_val = get_num_at_position(ans_remainder.pos.y, ans_remainder.pos.x).num_value;
 			
 			String string_msg = "";
@@ -1009,5 +1030,28 @@ public class GridBlocksGame extends ListenerAdapter{
 		{
 			channel_game.sendMessageEmbeds(embed.build()).queue();
 		}
+	}
+	
+	// Combine all Q blocks to get the value
+	public Integer get_quotient_value()
+	{
+		Integer new_int = null;
+		
+		for (int i = 0; i < ans_quotient.num_blocks; i++)
+		{
+			GridNumberBlock l_num = get_num_at_position(ans_quotient.pos[i].y, ans_quotient.pos[i].x);
+			
+			if (l_num != null)
+			{
+				if (new_int == null)
+				{
+					new_int = 0;
+				}
+				
+				new_int = new_int * 10 + l_num.num_value;
+			}
+		}
+		
+		return new_int;
 	}
 }

@@ -2,11 +2,19 @@ package GridBlocks;
 
 public class AnswerQuotient {
 	int expected_val;
-	GridPosition pos;
+	GridPosition[] pos;
 	String icon_string = ":regional_indicator_q:";
+	int num_blocks;
 	
-	public AnswerQuotient()
+	public AnswerQuotient(int num)
 	{
-		pos = new GridPosition(0, 0);
+		num_blocks = num;
+		
+		pos = new GridPosition[num_blocks];
+		
+		for (int i =0; i < num_blocks; i++)
+		{
+			pos[i] = new GridPosition(0, 0);
+		}
 	}
 }
