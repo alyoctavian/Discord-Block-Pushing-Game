@@ -109,7 +109,7 @@ public class GridBlocksGame extends ListenerAdapter{
 		
 		giantBlock = new GiantBlock();
 		
-		current_difficulty = 0;
+		current_difficulty = 2;
 	}
 	
 	public void CreateGrid()
@@ -120,8 +120,10 @@ public class GridBlocksGame extends ListenerAdapter{
 			break;
 		case DIF_MEDIUM:
 			GridSize = 8;
+			break;
 		case DIF_HARD:
 			GridSize = 10;
+			break;
 		default:
 			GridSize = 6;
 			System.out.println("DIFFICULTY ERROR!");
@@ -152,7 +154,9 @@ public class GridBlocksGame extends ListenerAdapter{
 		case DIF_EASY:
 			CreateSimpleQuestion();
 			break;
-
+		case DIF_MEDIUM:
+			CreateMediumQuestion();
+			break;
 		default:
 			CreateSimpleQuestion();
 			System.out.println("DIFFICULTY ERROR!");
@@ -207,31 +211,37 @@ public class GridBlocksGame extends ListenerAdapter{
 		}
 	}
 	
-	public void AddNumber(int val)
+	public void AddNumber(int number)
 	{
-		Random numRandom = new Random();
-		
-		int x = numRandom.nextInt(GridSize);
-		int y = numRandom.nextInt(GridSize);
-		
-		if (isNearEdge(x, y) || !can_add_block(x, y))
-		{
-			AddNumber(val);
-			return;
-		}
-		
-		if (Grid[y][x].equals(block))
-		{
-			GridNumberBlock num = new GridNumberBlock(new GridPosition(x, y), val);
+		do 
+		{	
+			int val = number%10;
+			number /= 10;
 			
-			Grid[y][x] = num.num_icon;
+			Random numRandom = new Random();
 			
-			numbers_list.add(num);
-		}
-		else 
-		{
-			AddNumber(val);
-		}
+			int x = numRandom.nextInt(GridSize);
+			int y = numRandom.nextInt(GridSize);
+			
+			if (isNearEdge(x, y) || !can_add_block(x, y))
+			{
+				AddNumber(val);
+				return;
+			}
+			
+			if (Grid[y][x].equals(block))
+			{
+				GridNumberBlock num = new GridNumberBlock(new GridPosition(x, y), val);
+				
+				Grid[y][x] = num.num_icon;
+				
+				numbers_list.add(num);
+			}
+			else 
+			{
+				AddNumber(val);
+			}
+		} while (number != 0);
 	}
 	
 	public void CreateGridString()
@@ -753,7 +763,7 @@ public class GridBlocksGame extends ListenerAdapter{
 		
 		divident_val = rand.ints(0, 100).findFirst().getAsInt();
 		
-		divisor_val = rand.ints(2, 100).findFirst().getAsInt();
+		divisor_val = rand.ints(2, 20).findFirst().getAsInt();
 		
 		System.out.println("Random divdent " + divident_val + '\n' +
 							"Random Divisor " + divisor_val + '\n');
@@ -837,14 +847,14 @@ public class GridBlocksGame extends ListenerAdapter{
 	{
 		Random numRandom = new Random();
 		
-		int x = numRandom.nextInt(GridSize);
+		int x = numRandom.nextInt(GridSize - ans_quotient.num_blocks + 1);
 		int y = numRandom.nextInt(GridSize);
 		
 		for (int i = 0; i < ans_quotient.num_blocks; i++)
 		{
 			if (Grid[y][x + i].equals(block))
 			{
-				ans_quotient.pos[i].x = x;
+				ans_quotient.pos[i].x = x + i;
 				ans_quotient.pos[i].y = y;
 				
 				Grid[y][x + i] = ans_quotient.icon_string;
@@ -861,14 +871,14 @@ public class GridBlocksGame extends ListenerAdapter{
 	{
 		Random numRandom = new Random();
 		
-		int x = numRandom.nextInt(GridSize);
+		int x = numRandom.nextInt(GridSize - ans_quotient.num_blocks + 1);
 		int y = numRandom.nextInt(GridSize);
 		
 		for (int i = 0; i < ans_remainder.num_blocks; i++)
 		{
 			if (Grid[y][x + i].equals(block))
 			{
-				ans_remainder.pos[i].x = x;
+				ans_remainder.pos[i].x = x + i;
 				ans_remainder.pos[i].y = y;
 				
 				Grid[y][x + i] = ans_remainder.icon_string;
