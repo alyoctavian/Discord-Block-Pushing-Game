@@ -2,11 +2,19 @@ package GridBlocks;
 
 public class AnswerRemainder {
 	int expected_val;
-	GridPosition pos;
+	GridPosition[] pos;
 	String icon_string = ":regional_indicator_r:";
+	int num_blocks;
 	
-	public AnswerRemainder()
+	public AnswerRemainder(int num)
 	{
-		pos = new GridPosition(0, 0);
+		num_blocks = num;
+		
+		pos = new GridPosition[num_blocks];
+		
+		for (int i =0; i < num_blocks; i++)
+		{
+			pos[i] = new GridPosition(0, 0);
+		}
 	}
 }

@@ -91,8 +91,14 @@ public class GridBlocksGame extends ListenerAdapter{
 		UP
 	}
 	
-	difficulty current_difficulty;
+	difficulty[] diff_levels = { difficulty.DIF_EASY, 
+									difficulty.DIF_EASY, 
+									difficulty.DIF_MEDIUM, 
+									difficulty.DIF_MEDIUM, 
+									difficulty.DIF_HARD, 
+									difficulty.DIF_HARD};
 	
+	int current_difficulty;
 	
 	public GridBlocksGame() 
 	{
@@ -101,16 +107,26 @@ public class GridBlocksGame extends ListenerAdapter{
 		
 		Hero = new GridViking();
 		
-		ans_remainder = new AnswerRemainder();
-		
 		giantBlock = new GiantBlock();
 		
-		current_difficulty = difficulty.DIF_EASY;
+		current_difficulty = 0;
 	}
 	
 	public void CreateGrid()
 	{		
-		GridSize = 6;
+		switch (diff_levels[current_difficulty]) {
+		case DIF_EASY:
+			GridSize = 6;
+			break;
+		case DIF_MEDIUM:
+			GridSize = 8;
+		case DIF_HARD:
+			GridSize = 10;
+		default:
+			GridSize = 6;
+			System.out.println("DIFFICULTY ERROR!");
+			break;
+		}
 		
 		Grid = new String[GridSize][GridSize];
 		
@@ -132,8 +148,16 @@ public class GridBlocksGame extends ListenerAdapter{
 		// Clear the numbers list
 		numbers_list.clear();
 		
-		// Create the simple question
-		CreateSimpleQuestion();
+		switch (diff_levels[current_difficulty]) {
+		case DIF_EASY:
+			CreateSimpleQuestion();
+			break;
+
+		default:
+			CreateSimpleQuestion();
+			System.out.println("DIFFICULTY ERROR!");
+			break;
+		}
 		
 		CreateGridString();
 	}
@@ -425,7 +449,7 @@ public class GridBlocksGame extends ListenerAdapter{
 			
 			// Add the submit emote
 			if (get_quotient_value() != null &&
-					get_num_at_position(ans_remainder.pos.y, ans_remainder.pos.x) != null)
+				get_remainder_value() != null)
 			{
 				message.addReaction(submit_icon).queue();
 			}
@@ -695,11 +719,41 @@ public class GridBlocksGame extends ListenerAdapter{
 	{
 		ans_quotient = new AnswerQuotient(1);
 		
+		ans_remainder = new AnswerRemainder(1);
+		
 		Random rand = new Random();
 		
 		divident_val = rand.ints(0, 10).findFirst().getAsInt();
 		
 		divisor_val = rand.ints(2, 10).findFirst().getAsInt();
+		
+		System.out.println("Random divdent " + divident_val + '\n' +
+							"Random Divisor " + divisor_val + '\n');
+		
+		ans_quotient.expected_val = Math.floorDiv(divident_val, divisor_val);
+		ans_remainder.expected_val = Math.floorMod(divident_val, divisor_val);
+		
+		System.out.println("Quotient " + ans_quotient.expected_val + '\n' +
+				"Remainder " + ans_remainder.expected_val + '\n');
+		
+		add_simple_numbers();
+		
+		add_quotient();
+		
+		add_remainder();
+	}
+	
+	public void CreateMediumQuestion()
+	{
+		ans_quotient = new AnswerQuotient(2);
+		
+		ans_remainder = new AnswerRemainder(2);
+		
+		Random rand = new Random();
+		
+		divident_val = rand.ints(0, 100).findFirst().getAsInt();
+		
+		divisor_val = rand.ints(2, 100).findFirst().getAsInt();
 		
 		System.out.println("Random divdent " + divident_val + '\n' +
 							"Random Divisor " + divisor_val + '\n');
@@ -810,16 +864,20 @@ public class GridBlocksGame extends ListenerAdapter{
 		int x = numRandom.nextInt(GridSize);
 		int y = numRandom.nextInt(GridSize);
 		
-		if (Grid[y][x].equals(block))
+		for (int i = 0; i < ans_remainder.num_blocks; i++)
 		{
-			ans_remainder.pos.x = x;
-			ans_remainder.pos.y = y;
-			
-			Grid[y][x] = ans_remainder.icon_string;
-		}
-		else 
-		{
-			add_remainder();
+			if (Grid[y][x + i].equals(block))
+			{
+				ans_remainder.pos[i].x = x;
+				ans_remainder.pos[i].y = y;
+				
+				Grid[y][x + i] = ans_remainder.icon_string;
+			}
+			else 
+			{
+				add_remainder();
+				break;
+			}
 		}
 	}
 	
@@ -847,9 +905,12 @@ public class GridBlocksGame extends ListenerAdapter{
 			}
 		}
 		
-		if (Grid[ans_remainder.pos.y][ans_remainder.pos.x] == block)
+		for (int i = 0; i < ans_remainder.num_blocks; i++)
 		{
-			Grid[ans_remainder.pos.y][ans_remainder.pos.x] = ans_remainder.icon_string;
+			if (Grid[ans_remainder.pos[i].y][ans_remainder.pos[i].x] == block)
+			{
+				Grid[ans_remainder.pos[i].y][ans_remainder.pos[i].x] = ans_remainder.icon_string;
+			}
 		}
 	}
 	
@@ -857,10 +918,10 @@ public class GridBlocksGame extends ListenerAdapter{
 	{
 		// Check if the answer is correct
 		if (get_quotient_value() != null &&
-			get_num_at_position(ans_remainder.pos.y, ans_remainder.pos.x) != null)
+			get_remainder_value() != null)
 		{
 			int q_val = get_quotient_value();
-			int r_val = get_num_at_position(ans_remainder.pos.y, ans_remainder.pos.x).num_value;
+			int r_val = get_remainder_value();
 			
 			String string_msg = "";
 			
@@ -1053,5 +1114,29 @@ public class GridBlocksGame extends ListenerAdapter{
 		}
 		
 		return new_int;
+	}
+	
+	public Integer get_remainder_value()
+	{
+
+		Integer new_int = null;
+		
+		for (int i = 0; i < ans_remainder.num_blocks; i++)
+		{
+			GridNumberBlock l_num = get_num_at_position(ans_remainder.pos[i].y, ans_remainder.pos[i].x);
+			
+			if (l_num != null)
+			{
+				if (new_int == null)
+				{
+					new_int = 0;
+				}
+				
+				new_int = new_int * 10 + l_num.num_value;
+			}
+		}
+		
+		return new_int;
+	
 	}
 }
