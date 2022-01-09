@@ -607,6 +607,9 @@ public class GridBlocksGame extends ListenerAdapter{
 		// Check if there is a number in the moving direction
 		GridNumberBlock rightNum = get_num_at_position(Hero.pos.y, Hero.pos.x + 1);
 		
+		// Check if there is a minus sign
+		MinusBlock minus_block = get_minus_at_position(Hero.pos.y, Hero.pos.x + 1);
+		
 		// Check if we can move
 		if (Hero.pos.x < GridSize -1 &&
 			can_move_dir(Hero.pos.y, Hero.pos.x + 1))
@@ -633,12 +636,31 @@ public class GridBlocksGame extends ListenerAdapter{
 			rightNum.pos.x += 1;
 			Grid[rightNum.pos.y][rightNum.pos.x] = rightNum.num_icon;
 		}
+		// Move the minus block
+		else if (Hero.pos.x < GridSize -2 &&
+				can_move_dir(Hero.pos.y, Hero.pos.x + 2) &&
+				minus_block != null)
+		{
+			// Move the hero
+			Grid[Hero.pos.y][Hero.pos.x] = block;
+			
+			Hero.pos.x += 1;
+			
+			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
+			
+			// Move the block to the right
+			minus_block.pos.x += 1;
+			Grid[minus_block.pos.y][minus_block.pos.x] = minus_block.icon_string;
+		}
 	}
 	
 	public void MoveLeft()
 	{
 		// Check if there is a number in the moving direction
 		GridNumberBlock leftNum = get_num_at_position(Hero.pos.y, Hero.pos.x - 1);
+		
+		// Check if there is a minus sign
+		MinusBlock minus_block = get_minus_at_position(Hero.pos.y, Hero.pos.x - 1);
 		
 		if (Hero.pos.x > 0 &&
 			can_move_dir(Hero.pos.y, Hero.pos.x - 1))
@@ -665,12 +687,30 @@ public class GridBlocksGame extends ListenerAdapter{
 			leftNum.pos.x -= 1;
 			Grid[leftNum.pos.y][leftNum.pos.x] = leftNum.num_icon;
 		}
+		else if (Hero.pos.x > 1 &&
+				can_move_dir(Hero.pos.y, Hero.pos.x - 2) &&
+				minus_block != null)
+		{
+			// Move the hero
+			Grid[Hero.pos.y][Hero.pos.x] = block;
+			
+			Hero.pos.x -= 1;
+			
+			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
+			
+			// Move the block
+			minus_block.pos.x -= 1;
+			Grid[minus_block.pos.y][minus_block.pos.x] = minus_block.icon_string;
+		}
 	}
 	
 	public void MoveDown()
 	{
 		// Check if there is a number in the moving direction
 		GridNumberBlock downNum = get_num_at_position(Hero.pos.y + 1, Hero.pos.x);
+		
+		// Check if there is a minus sign
+		MinusBlock minus_block = get_minus_at_position(Hero.pos.y + 1, Hero.pos.x);
 		
 		if (Hero.pos.y < GridSize - 1 &&
 			can_move_dir(Hero.pos.y + 1, Hero.pos.x))
@@ -696,12 +736,30 @@ public class GridBlocksGame extends ListenerAdapter{
 			downNum.pos.y += 1;
 			Grid[downNum.pos.y][downNum.pos.x] = downNum.num_icon;
 		}
+		else if (Hero.pos.y < GridSize - 2 &&
+				can_move_dir(Hero.pos.y + 2, Hero.pos.x) &&
+				minus_block != null) 
+		{
+			// Move the hero
+			Grid[Hero.pos.y][Hero.pos.x] = block;
+			
+			Hero.pos.y += 1;
+			
+			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
+			
+			// Move the block
+			minus_block.pos.y += 1;
+			Grid[minus_block.pos.y][minus_block.pos.x] = minus_block.icon_string;
+		}
 	}
 	
 	public void MoveUp()
 	{
 		// Check if there is a number in the moving direction
 		GridNumberBlock upNum = get_num_at_position(Hero.pos.y - 1, Hero.pos.x);
+		
+		// Check if there is a minus sign
+		MinusBlock minus_block = get_minus_at_position(Hero.pos.y - 1, Hero.pos.x);
 		
 		if (Hero.pos.y > 0 &&
 			can_move_dir(Hero.pos.y - 1, Hero.pos.x))
@@ -727,6 +785,21 @@ public class GridBlocksGame extends ListenerAdapter{
 			// Move the number
 			upNum.pos.y -= 1;
 			Grid[upNum.pos.y][upNum.pos.x] = upNum.num_icon;
+		}
+		else if (Hero.pos.y > 1 &&
+				can_move_dir(Hero.pos.y - 2, Hero.pos.x) &&
+				minus_block != null)
+		{
+			// Move the hero
+			Grid[Hero.pos.y][Hero.pos.x] = block;
+			
+			Hero.pos.y -= 1;
+			
+			Grid[Hero.pos.y][Hero.pos.x] = Hero.HeroIcon;
+			
+			// Move the number
+			minus_block.pos.y -= 1;
+			Grid[minus_block.pos.y][minus_block.pos.x] = minus_block.icon_string;
 		}
 		
 	}
@@ -761,6 +834,20 @@ public class GridBlocksGame extends ListenerAdapter{
 					numbers_list.get(i).pos.y == y)
 			{
 				return numbers_list.get(i);
+			}
+		}
+		
+		return null;
+	}
+	
+	public MinusBlock get_minus_at_position(int y, int x)
+	{
+		for (int i = 0; i < minus_blocks_list.size(); i++)
+		{
+			if (minus_blocks_list.get(i).pos.x == x &&
+					minus_blocks_list.get(i).pos.y == y)
+			{
+				return minus_blocks_list.get(i);
 			}
 		}
 		
