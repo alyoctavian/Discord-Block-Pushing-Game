@@ -64,6 +64,7 @@ public class GridBlocksGame extends ListenerAdapter{
 	
 	// Numbers array
 	List<GridNumberBlock> numbers_list = new ArrayList<GridNumberBlock>();
+	List<MinusBlock>	  minus_blocks_list = new ArrayList<MinusBlock>();
 	
 	// Expected answers
 	AnswerQuotient ans_quotient;
@@ -109,7 +110,7 @@ public class GridBlocksGame extends ListenerAdapter{
 		
 		giantBlock = new GiantBlock();
 		
-		current_difficulty = 2;
+		current_difficulty = 5;
 		
 		channel_game = null;
 	}
@@ -152,12 +153,18 @@ public class GridBlocksGame extends ListenerAdapter{
 		// Clear the numbers list
 		numbers_list.clear();
 		
+		// Clear minus list
+		minus_blocks_list.clear();
+		
 		switch (diff_levels[current_difficulty]) {
 		case DIF_EASY:
 			CreateSimpleQuestion();
 			break;
 		case DIF_MEDIUM:
 			CreateMediumQuestion();
+			break;
+		case DIF_HARD:
+			CreateHardQuestion();
 			break;
 		default:
 			CreateSimpleQuestion();
@@ -215,6 +222,13 @@ public class GridBlocksGame extends ListenerAdapter{
 	
 	public void AddNumber(int number_to_add)
 	{
+		if (number_to_add < 0)
+		{
+			add_minus_sign();
+			
+			number_to_add *= -1;
+		}
+		
 		do 
 		{	
 			int val = number_to_add%10;
@@ -809,6 +823,41 @@ public class GridBlocksGame extends ListenerAdapter{
 		add_remainder();
 	}
 	
+	public void CreateHardQuestion()
+	{
+		ans_quotient = new AnswerQuotient(3);
+		
+		ans_remainder = new AnswerRemainder(3);
+		
+		Random rand = new Random();
+		
+		divident_val = rand.ints(0, 100).findFirst().getAsInt();
+		
+		while(divident_val == 0)
+		{
+			divident_val = rand.ints(0, 100).findFirst().getAsInt();
+		}
+		
+		divident_val *= -1;
+		
+		divisor_val = rand.ints(2, 20).findFirst().getAsInt();
+		
+		System.out.println("Random divdent " + divident_val + '\n' +
+							"Random Divisor " + divisor_val + '\n');
+		
+		ans_quotient.expected_val = Math.floorDiv(divident_val, divisor_val);
+		ans_remainder.expected_val = Math.floorMod(divident_val, divisor_val);
+		
+		System.out.println("Quotient " + ans_quotient.expected_val + '\n' +
+				"Remainder " + ans_remainder.expected_val + '\n');
+		
+		add_simple_numbers();
+		
+		add_quotient();
+		
+		add_remainder();
+	}
+	
 	public void add_simple_numbers()
 	{
 		// Add the expected answers
@@ -841,23 +890,33 @@ public class GridBlocksGame extends ListenerAdapter{
 		
 		for (int i = 0; i < num_to_add; i++)
 		{
-			int randomVal = numRandom.nextInt(Math.min(ans_quotient.expected_val + 4, 10));
+			int randomVal = numRandom.nextInt(Math.min(Math.abs(ans_quotient.expected_val) + 4, 10));
 			int loops_try = 0;
 			
 			// Add three more random  numbers
 			while (is_value_in_list(randomVal))
 			{
-				randomVal = numRandom.nextInt(Math.min(ans_quotient.expected_val + 4, 10));
+				randomVal = numRandom.nextInt(Math.min(Math.abs(ans_quotient.expected_val) + 4, 10));
 				
 				loops_try += 1;
 				
 				if (loops_try > 4)
 				{
 					randomVal = numRandom.nextInt(10);
+					break;
 				}
 			}
 			
 			AddNumber(randomVal);
+		}
+		
+		if (diff_levels[current_difficulty] == difficulty.DIF_HARD)
+		{
+			// Add decoy minus signs
+			while (minus_blocks_list.size() < 3)
+			{
+				add_minus_sign();
+			}
 		}
 	}
 	
@@ -927,6 +986,38 @@ public class GridBlocksGame extends ListenerAdapter{
 				break;
 			}
 		}
+	}
+	
+	public void add_minus_sign()
+	{
+			
+			Random numRandom = new Random();
+			
+			int x = numRandom.nextInt(GridSize);
+			int y = numRandom.nextInt(GridSize);
+			
+			if (isNearEdge(x, y) || !can_add_block(x, y))
+			{
+				add_minus_sign();
+				return;
+			}
+			
+			if (Grid[y][x].equals(block))
+			{
+				MinusBlock minus_block = new MinusBlock(x, y);
+				
+				Grid[y][x] = minus_block.icon_string;
+				
+				minus_blocks_list.add(minus_block);
+				
+				return;
+			}
+			else 
+			{
+				add_minus_sign();
+				return;
+			}
+			
 	}
 	
 	public Boolean is_value_in_list(int val)
