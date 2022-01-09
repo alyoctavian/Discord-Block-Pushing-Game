@@ -1324,8 +1324,25 @@ public class GridBlocksGame extends ListenerAdapter{
 	{
 		Integer new_int = null;
 		
+		boolean negative_multiply = false;
+		
 		for (int i = 0; i < ans_quotient.num_blocks; i++)
 		{
+			if (get_minus_at_position(ans_quotient.pos[i].y, ans_quotient.pos[i].x) != null)
+			{
+				// If there is an error in arranging the minus sign, send a message
+				// Ex: 5️⛔7️
+				if ((i > 0 && get_num_at_position(ans_quotient.pos[i].y, ans_quotient.pos[i].x) != null)
+					|| i == 2)
+				{
+					channel_game.sendMessage("Writing the negative number has a wrong sequence!");
+					return null;
+				}
+				
+				negative_multiply = true;
+				continue;
+			}
+			
 			GridNumberBlock l_num = get_num_at_position(ans_quotient.pos[i].y, ans_quotient.pos[i].x);
 			
 			if (l_num != null)
@@ -1339,6 +1356,11 @@ public class GridBlocksGame extends ListenerAdapter{
 			}
 		}
 		
+		if (negative_multiply && new_int != null)
+		{
+			new_int *= -1;
+		}
+		
 		return new_int;
 	}
 	
@@ -1347,8 +1369,25 @@ public class GridBlocksGame extends ListenerAdapter{
 
 		Integer new_int = null;
 		
+		boolean negative_multiply = false;
+		
 		for (int i = 0; i < ans_remainder.num_blocks; i++)
 		{
+			if (get_minus_at_position(ans_remainder.pos[i].y, ans_remainder.pos[i].x) != null)
+			{
+				// If there is an error in arranging the minus sign, send a message
+				// Ex: 5️⛔7️
+				if ((i > 0 && get_num_at_position(ans_remainder.pos[i].y, ans_remainder.pos[i].x) != null)
+					|| i == 2)
+				{
+					channel_game.sendMessage("Writing the negative number has a wrong sequence!");
+					return null;
+				}
+				
+				negative_multiply = true;
+				continue;
+			}
+			
 			GridNumberBlock l_num = get_num_at_position(ans_remainder.pos[i].y, ans_remainder.pos[i].x);
 			
 			if (l_num != null)
@@ -1360,6 +1399,11 @@ public class GridBlocksGame extends ListenerAdapter{
 				
 				new_int = new_int * 10 + l_num.num_value;
 			}
+		}
+		
+		if (negative_multiply && new_int != null)
+		{
+			new_int *= -1;
 		}
 		
 		return new_int;
