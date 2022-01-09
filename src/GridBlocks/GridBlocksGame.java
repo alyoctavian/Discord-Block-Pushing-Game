@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import Main.BotStartup;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -101,6 +102,8 @@ public class GridBlocksGame extends ListenerAdapter{
 	
 	int current_difficulty;
 	
+	Boolean reactions_added;
+	
 	public GridBlocksGame() 
 	{
 		GridString = "";
@@ -113,6 +116,8 @@ public class GridBlocksGame extends ListenerAdapter{
 		current_difficulty = 5;
 		
 		channel_game = null;
+		
+		reactions_added = true;
 	}
 	
 	public void CreateGrid()
@@ -488,8 +493,24 @@ public class GridBlocksGame extends ListenerAdapter{
 	
 	public void SendGridMessage(TextChannel channel)
 	{
+		
 		channel.sendMessage(GridString).queue(message -> {
 			GridMsg = message;
+			
+			while (!reactions_added)
+			{
+				try
+				{
+				    Thread.sleep(500);
+				}
+				catch(InterruptedException ex)
+				{
+				    Thread.currentThread().interrupt();
+				}
+			}
+			
+			reactions_added = false;
+			
 			if (Hero.is_alive)
 			{
 				message.addReaction(ArrowLeft).queue();
@@ -497,7 +518,19 @@ public class GridBlocksGame extends ListenerAdapter{
 				message.addReaction(ArrowDown).queue();
 				message.addReaction(ArrowUp).queue();
 			}
-			message.addReaction(RefreshArrows).queue();
+			message.addReaction(RefreshArrows).queue(react -> {
+				
+				try
+				{
+				    Thread.sleep(1000);
+				}
+				catch(InterruptedException ex)
+				{
+				    Thread.currentThread().interrupt();
+				}
+				
+				reactions_added = true;
+			});
 			
 			// Add the submit emote
 			if (get_quotient_value() != null &&
