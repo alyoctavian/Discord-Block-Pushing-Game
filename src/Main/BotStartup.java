@@ -19,6 +19,8 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 public class BotStartup {
 	public static String prefix = "!";
 	
+	public static PointsSystem myPointsSystem;
+	
 	public static void main(String[] args) throws LoginException
 	{
 		JDABuilder jda = JDABuilder.createDefault("OTExNjU5MTU0Nzc3NzE4Nzk0.YZkmwA.JNo4SDUgEGBbc4L8NlSQWmMtjIA").enableIntents(GatewayIntent.GUILD_MEMBERS);
@@ -30,8 +32,10 @@ public class BotStartup {
 		jda.addEventListeners(new GuildMemberJoin());
 		jda.addEventListeners(new GuildMemberLeave());
 		jda.addEventListeners(new GuildMessageReceived());
-
-		jda.addEventListeners(new PointsSystem());
+		
+		myPointsSystem = new PointsSystem();
+		
+		jda.addEventListeners(myPointsSystem);
 		jda.addEventListeners(new CreateChannel());
 		
 		jda.addEventListeners(new GridBlocksGame());

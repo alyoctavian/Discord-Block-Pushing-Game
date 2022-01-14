@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.text.ChangedCharSetException;
+
 import Main.BotStartup;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -75,6 +77,7 @@ public class GridBlocksGame extends ListenerAdapter{
 	int divisor_val;
 	
 	// Store the game channel
+	// TODO: Method of handling this is shady AF. Please fix.
 	TextChannel channel_game;
 	
 	// Current game difficulty for the game
@@ -93,11 +96,8 @@ public class GridBlocksGame extends ListenerAdapter{
 		UP
 	}
 	
-	difficulty[] diff_levels = { difficulty.DIF_EASY, 
-									difficulty.DIF_EASY, 
-									difficulty.DIF_MEDIUM, 
-									difficulty.DIF_MEDIUM, 
-									difficulty.DIF_HARD, 
+	difficulty[] diff_levels = { difficulty.DIF_EASY,
+									difficulty.DIF_MEDIUM,
 									difficulty.DIF_HARD};
 	
 	int current_difficulty;
@@ -113,7 +113,7 @@ public class GridBlocksGame extends ListenerAdapter{
 		
 		giantBlock = new GiantBlock();
 		
-		current_difficulty = 5;
+		current_difficulty = 0;
 		
 		channel_game = null;
 		
@@ -121,7 +121,7 @@ public class GridBlocksGame extends ListenerAdapter{
 	}
 	
 	public void CreateGrid()
-	{		
+	{	
 		switch (diff_levels[current_difficulty]) {
 		case DIF_EASY:
 			GridSize = 6;
@@ -324,7 +324,7 @@ public class GridBlocksGame extends ListenerAdapter{
 			return;
 		}*/
 		
-		if (channel_game == null)
+		if (channel_game == null || !channel_game.equals(event.getChannel()))
 		{
 			channel_game = event.getChannel();
 		}
@@ -344,6 +344,12 @@ public class GridBlocksGame extends ListenerAdapter{
 		if (args[0].equalsIgnoreCase(BotStartup.prefix + "help"))
 		{
 			send_help_message(event.getChannel());
+		}
+		
+		// TODO: Delete this
+		if (args[0].equalsIgnoreCase(BotStartup.prefix + "complete"))
+		{
+			CompleteLevel();
 		}
 	}
 		
@@ -366,7 +372,7 @@ public class GridBlocksGame extends ListenerAdapter{
 			return;
 		}*/
 		
-		if (channel_game == null)
+		if (channel_game == null || !channel_game.equals(event.getChannel()))
 		{
 			channel_game = event.getChannel();
 		}
@@ -514,9 +520,20 @@ public class GridBlocksGame extends ListenerAdapter{
 			if (Hero.is_alive)
 			{
 				message.addReaction(ArrowLeft).queue();
+				
+				add_sleep(500);
+				
 				message.addReaction(ArrowRight).queue();
+				
+				add_sleep(500);
+				
 				message.addReaction(ArrowDown).queue();
+				
+				add_sleep(500);
+				
 				message.addReaction(ArrowUp).queue();
+				
+				add_sleep(500);
 			}
 			message.addReaction(RefreshArrows).queue(react -> {
 				
@@ -534,7 +551,8 @@ public class GridBlocksGame extends ListenerAdapter{
 			
 			// Add the submit emote
 			if (get_quotient_value() != null &&
-				get_remainder_value() != null)
+				get_remainder_value() != null &&
+				reactions_added == true)
 			{
 				message.addReaction(submit_icon).queue();
 			}
@@ -1182,19 +1200,33 @@ public class GridBlocksGame extends ListenerAdapter{
 			int q_val = get_quotient_value();
 			int r_val = get_remainder_value();
 			
-			String string_msg = "";
-			
 			if (q_val == ans_quotient.expected_val &&
 				r_val == ans_remainder.expected_val)
 			{
-				string_msg = "Well Done";
+				CompleteLevel();
 			}
 			else 
 			{
-				string_msg = "Wrong Answer! Try again!";
+				EmbedBuilder embed = new EmbedBuilder();
+				
+				embed.setTitle("The path is not quite cleared.");
+				
+				embed.setDescription("The answer is wrong. Have another look and try again.");
+				
+				if (channel_game.getGuild().getOwner() != null)
+				{
+					embed.setFooter("Game Created by Octavian", channel_game.getGuild().getOwner().getUser().getAvatarUrl());
+				}
+				else 
+				{
+					System.out.println("Can't create Embed footer \n");
+				}
+				
+				embed.setColor(Color.RED);
+				
+				channel_game.sendMessageEmbeds(embed.build()).queue();
 			}
-			
-			event.getChannel().sendMessage(string_msg).queue();
+
 		}
 		else 
 		{
@@ -1441,5 +1473,106 @@ public class GridBlocksGame extends ListenerAdapter{
 		
 		return new_int;
 	
+	}
+	
+	public void CompleteLevel()
+	{
+		int points = 3;
+		
+		switch (diff_levels[current_difficulty]) {
+		case DIF_EASY:
+			points = 3;
+			break;
+		case DIF_MEDIUM:
+			points = 5;
+			break;
+		case DIF_HARD:
+			points = 10;
+			break;
+		default:
+			break;
+		}
+		
+		// TODO: Add embed for congrats
+		
+		// Add the points to the hashmap
+		// TODO: find another way to get the member
+		BotStartup.myPointsSystem.AddPlayerPoints(channel_game.getTopic(), points);
+		
+		// Start the next level
+		if (current_difficulty < diff_levels.length - 1)
+		{
+			EmbedBuilder embed = new EmbedBuilder();
+			
+			String path_name = "";
+			
+			switch (current_difficulty) {
+			case 0:
+				path_name = "first";
+				break;
+			case 1:
+				path_name = "second";
+				break;
+			default:
+				break;
+			}
+			
+			embed.setTitle("Congrats! You cleared the " + path_name + " path and got " + points + " points!");
+			
+			embed.setDescription("There are more challenges ahead!");
+			
+			if (channel_game.getGuild().getOwner() != null)
+			{
+				embed.setFooter("Game Created by Octavian", channel_game.getGuild().getOwner().getUser().getAvatarUrl());
+			}
+			else 
+			{
+				System.out.println("Can't create Embed footer \n");
+			}
+			
+			embed.setColor(Color.GREEN);
+			
+			channel_game.sendMessageEmbeds(embed.build()).queue();
+			
+			current_difficulty++;
+			
+			CreateGrid();
+			
+			SendGridMessage(channel_game);
+		}
+		else
+		{
+			EmbedBuilder embed = new EmbedBuilder();
+			
+			embed.setTitle("Congrats! You cleared all paths!");
+			
+			// TODO: Something to do with the story
+			embed.setDescription("There are more challenges ahead!");
+			
+			if (channel_game.getGuild().getOwner() != null)
+			{
+				embed.setFooter("Game Created by Octavian", channel_game.getGuild().getOwner().getUser().getAvatarUrl());
+			}
+			else 
+			{
+				System.out.println("Can't create Embed footer \n");
+			}
+			
+			embed.setColor(Color.GREEN);
+			
+			channel_game.sendMessageEmbeds(embed.build()).queue();
+			
+			// TODO: consider any things for the endgame
+		}
+	}
+	
+	public void add_sleep(int MS)
+	{
+		try {
+			Thread.sleep(MS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

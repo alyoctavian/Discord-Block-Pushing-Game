@@ -17,6 +17,7 @@ public class PointsSystem extends ListenerAdapter{
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event)
 	{
 		// Checks if the message is not from the bot
+		
 		if (event.getMember().getUser().equals(event.getJDA().getSelfUser())) 
 		{
 			return;
@@ -28,18 +29,24 @@ public class PointsSystem extends ListenerAdapter{
 		{
 			event.getChannel().sendMessage("You have " + GetPlayerPoints(event.getMember().getId()) + " points").queue();
 		}
-		else if (CanGetPoints(event.getMember().getId()))
+		// Comment this out. We don't need to add points on each message
+		/*else if (CanGetPoints(event.getMember().getId()))
 		{
 			RandPoints(event.getMember().getId());
 			
 			SetPlayerTimer(event.getMember().getId(), 100);
 			
 			StartTimer(event.getMember().getId());
-		}
+		}*/
 	}
 	
 	private int GetPlayerPoints(String memberID)
 	{
+		if (!PlayerPoints.containsKey(memberID))
+		{
+			SetPlayerPoints(memberID, 0);
+		}
+		
 		return PlayerPoints.get(memberID);
 	}
 	
@@ -56,6 +63,16 @@ public class PointsSystem extends ListenerAdapter{
 	private void SetPlayerTimer(String memberID, int new_time)
 	{
 		PlayerTimer.put(memberID, new_time);
+	}
+	
+	public void AddPlayerPoints(String memberID, int points)
+	{
+		if (!PlayerPoints.containsKey(memberID))
+		{
+			SetPlayerPoints(memberID, 0);
+		}
+		
+		SetPlayerPoints(memberID, GetPlayerPoints(memberID) + points);
 	}
 	
 	public void RandPoints(String memberID)
