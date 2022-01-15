@@ -366,11 +366,11 @@ public class GridBlocksGame extends ListenerAdapter{
 		{
 			return;
 		}
-		// TODO: Check this
-		/*if (!event.getChannel().getTopic().equalsIgnoreCase(event.getUser().getId()))
+
+		if (!event.getChannel().getTopic().equalsIgnoreCase(event.getUser().getId()))
 		{
 			return;
-		}*/
+		}
 		
 		if (channel_game == null || !channel_game.equals(event.getChannel()))
 		{
