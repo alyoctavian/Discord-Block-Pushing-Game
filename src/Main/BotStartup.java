@@ -7,7 +7,6 @@ import Commands.Embed;
 import CreateChannel.CreateChannel;
 import Events.GuildMemberJoin;
 import Events.GuildMemberLeave;
-import Events.GuildMessageReactionAdd;
 import Events.GuildMessageReceived;
 import GridBlocks.GridBlocksGame;
 import GuildGameSystem.GuildGameSystem;
@@ -18,6 +17,8 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.ChunkingFilter;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
 public class BotStartup {
 	public static String prefix = "!";
@@ -32,7 +33,10 @@ public class BotStartup {
 	
 	public static void main(String[] args) throws LoginException, InterruptedException
 	{
-		JDABuilder jda = JDABuilder.createDefault("OTExNjU5MTU0Nzc3NzE4Nzk0.YZkmwA.JNo4SDUgEGBbc4L8NlSQWmMtjIA").enableIntents(GatewayIntent.GUILD_MEMBERS);
+		JDABuilder jda = JDABuilder.createDefault("OTExNjU5MTU0Nzc3NzE4Nzk0.YZkmwA.JNo4SDUgEGBbc4L8NlSQWmMtjIA")
+						.setChunkingFilter(ChunkingFilter.ALL)
+						.setMemberCachePolicy(MemberCachePolicy.ALL).enableIntents(GatewayIntent.GUILD_MEMBERS);
+		
 		jda.setActivity(Activity.playing("!Game"));
 		jda.setStatus(OnlineStatus.ONLINE);
 		
@@ -58,5 +62,7 @@ public class BotStartup {
 		myBot.awaitReady();
 		
 		myGuildGameSystem.SetupSelectionChannel();
+		
+		myPointsSystem.CreatePlayerLeaderboard();
 	}
 }

@@ -1,13 +1,19 @@
 package PointsSystem;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import Main.BotStartup;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.utils.concurrent.Task;
 
 public class PointsSystem extends ListenerAdapter{
 	
@@ -87,6 +93,48 @@ public class PointsSystem extends ListenerAdapter{
 		int points = numRandom.nextInt(26);
 		
 		SetPlayerPoints(memberID, GetPlayerPoints(memberID) + points);
+	}
+	
+	public void CreatePlayerLeaderboard()
+	{
+		Guild myGuild = BotStartup.myBot.getGuildById("911650356084240384");
+
+		
+		List<Member> myMembers = myGuild.getMembers();
+		
+		for (Member member : myMembers) 
+		{
+			if (member.getId().equalsIgnoreCase("911659154777718794")
+					|| member.getId().equalsIgnoreCase("134073775925886976"))
+			{
+				continue;
+			}
+			
+			if (!PlayerPoints.containsKey(member.getId()))
+			{
+				SetPlayerPoints(member.getId(), 0);
+			}
+			
+			//System.out.print(member.getEffectiveName() + " " + GetPlayerPoints(member.getId()) + '\n');
+		}
+		
+		// We are displaying the leaderboard for up to 5 members
+		int displayedMembers = Math.max(5, myMembers.size());
+		
+		List<Integer> highestScores = new ArrayList<>();
+		
+		Set<String> playersSet = PlayerPoints.keySet();
+		
+		for (String memberKey : playersSet) 
+		{
+			if (memberKey.equalsIgnoreCase("911659154777718794")
+					|| memberKey.equalsIgnoreCase("134073775925886976"))
+			{
+				continue;
+			}
+			
+			highestScores.add(GetPlayerPoints(memberKey));
+		}
 	}
 	
 	private boolean CanGetPoints(String memberID)

@@ -356,6 +356,8 @@ public class GridBlocksGame extends ListenerAdapter{
 	@Override
 	public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event)
 	{
+		BotStartup.myPointsSystem.CreatePlayerLeaderboard();
+		
 		if (!event.getChannel().getName().equalsIgnoreCase("game1") ||
 			event.getMember().getUser().equals(event.getJDA().getSelfUser()))
 		{
@@ -551,9 +553,20 @@ public class GridBlocksGame extends ListenerAdapter{
 			
 			// Add the submit emote
 			if (get_quotient_value() != null &&
-				get_remainder_value() != null &&
-				reactions_added == true)
+				get_remainder_value() != null)
 			{
+				while (!reactions_added)
+				{
+					try
+					{
+					    Thread.sleep(500);
+					}
+					catch(InterruptedException ex)
+					{
+					    Thread.currentThread().interrupt();
+					}
+				}
+				
 				message.addReaction(submit_icon).queue();
 			}
 			
