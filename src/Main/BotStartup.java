@@ -24,6 +24,8 @@ public class BotStartup {
 	
 	public static PointsSystem myPointsSystem;
 	
+	public static GuildGameSystem myGuildGameSystem;
+	
 	public static JDA myBot;
 	
 	public static TextChannel selectionChannel;
@@ -42,17 +44,19 @@ public class BotStartup {
 		
 		myPointsSystem = new PointsSystem();
 		
+		myGuildGameSystem = new GuildGameSystem();
+		
 		jda.addEventListeners(myPointsSystem);
 		jda.addEventListeners(new CreateChannel());
 		
 		jda.addEventListeners(new GridBlocksGame());
 		
+		jda.addEventListeners(myGuildGameSystem);
+		
 		myBot = jda.build();
 		
-		//myBot.awaitReady();
+		myBot.awaitReady();
 		
-		jda.addEventListeners(new GuildGameSystem());
-		
-		jda.build();
+		myGuildGameSystem.SetupSelectionChannel();
 	}
 }

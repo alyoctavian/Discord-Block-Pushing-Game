@@ -5,8 +5,10 @@ import java.util.List;
 
 import Main.BotStartup;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
@@ -17,13 +19,16 @@ public class GuildGameSystem extends ListenerAdapter{
 TextChannel selectionChannel;
 Message		selectGuildMessage;
 Boolean retrievedMessages;
+Boolean selecionChannelProcessed;
 	
-	public GuildGameSystem() 
+	public void SetupSelectionChannel()
 	{
+		// We need to find or setup the selection message
 		retrievedMessages = false;
 		
 		selectionChannel = BotStartup.myBot.getTextChannelsByName("guild-selection", true).get(0);
 		
+		// Get the first, and only message in the channel
 		selectionChannel.getHistory().retrievePast(1).queue(mesagesList ->
 		{
 			if (mesagesList.size() > 0)
@@ -36,9 +41,17 @@ Boolean retrievedMessages;
 		
 		while (!retrievedMessages)
 		{
-			// Wait for the previous action to complete
+			try
+			{
+			    Thread.sleep(500);
+			}
+			catch(InterruptedException ex)
+			{
+			    Thread.currentThread().interrupt();
+			}
 		}
 		
+		// If there's no message, create one
 		if (selectGuildMessage == null)
 		{
 			EmbedBuilder embed = new EmbedBuilder();
@@ -84,13 +97,38 @@ Boolean retrievedMessages;
 			    });
 			}
 		}
+		
+		// We now finished processing the message
+		selecionChannelProcessed = true;
 	}
 	
 	@Override
 	public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event)
 	{
+		selecionChannelProcessed = false;
+		
+		// Setup the channel and retrieve the message
+		SetupSelectionChannel();
+		
+		while (!selecionChannelProcessed)
+		{
+			try
+			{
+			    Thread.sleep(500);
+			}
+			catch(InterruptedException ex)
+			{
+			    Thread.currentThread().interrupt();
+			}
+		}
+		
 		if (!event.getMessageId().equalsIgnoreCase(selectGuildMessage.getId()) ||
 				event.getMember().getUser().equals(event.getJDA().getSelfUser()))
+		{
+			return;
+		}
+		
+		if (isMemberInGuild(event.getMember()))
 		{
 			return;
 		}
@@ -133,5 +171,21 @@ Boolean retrievedMessages;
 			event.getGuild().addRoleToMember(event.getMember(), event.getGuild().getRoleById("931915643526205510")).complete();
 		}
 	}
-
+	
+	public Boolean isMemberInGuild(Member member)
+	{
+		List<Role> roles = member.getRoles();
+		
+		for (Role role : roles) 
+		{
+			if (role.getId().equalsIgnoreCase("925827156951593010")
+				|| role.getId().equalsIgnoreCase("931915568917938236")
+				|| role.getId().equalsIgnoreCase("931915643526205510"))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
 }
