@@ -355,9 +355,7 @@ public class GridBlocksGame extends ListenerAdapter{
 		
 	@Override
 	public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event)
-	{
-		BotStartup.myPointsSystem.CreatePlayerLeaderboard();
-		
+	{	
 		if (!event.getChannel().getName().equalsIgnoreCase("game1") ||
 			event.getMember().getUser().equals(event.getJDA().getSelfUser()))
 		{
@@ -378,6 +376,8 @@ public class GridBlocksGame extends ListenerAdapter{
 		{
 			channel_game = event.getChannel();
 		}
+		
+		BotStartup.myPointsSystem.CreatePlayerLeaderboard();
 		
 		// Selecting the Hero Icon
 		if (SelectHeroMsg != null && event.getMessageId().equalsIgnoreCase(SelectHeroMsg.getId()))

@@ -1,24 +1,28 @@
 package PointsSystem;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import Main.BotStartup;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.utils.concurrent.Task;
 
 public class PointsSystem extends ListenerAdapter{
 	
 	HashMap<String, Integer> PlayerPoints = new HashMap<>();
 	HashMap<String, Integer> PlayerTimer = new HashMap<>();
+	
+	Guild myGuild;
 	
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event)
 	{
@@ -97,7 +101,7 @@ public class PointsSystem extends ListenerAdapter{
 	
 	public void CreatePlayerLeaderboard()
 	{
-		Guild myGuild = BotStartup.myBot.getGuildById("911650356084240384");
+		myGuild = BotStartup.myBot.getGuildById("911650356084240384");
 
 		
 		List<Member> myMembers = myGuild.getMembers();
@@ -118,9 +122,6 @@ public class PointsSystem extends ListenerAdapter{
 			//System.out.print(member.getEffectiveName() + " " + GetPlayerPoints(member.getId()) + '\n');
 		}
 		
-		// We are displaying the leaderboard for up to 5 members
-		int displayedMembers = Math.max(5, myMembers.size());
-		
 		List<Integer> highestScores = new ArrayList<>();
 		
 		Set<String> playersSet = PlayerPoints.keySet();
@@ -134,6 +135,96 @@ public class PointsSystem extends ListenerAdapter{
 			}
 			
 			highestScores.add(GetPlayerPoints(memberKey));
+		}
+		
+		// We are displaying the leaderboard for up to 5 members
+		int displayedMembers = Math.min(5, highestScores.size());
+		
+		// Sort the list in highest > low order
+		Collections.sort(highestScores);
+		
+		Collections.reverse(highestScores);
+		
+		DisplayMemberLeaderboard(displayedMembers, highestScores);
+	}
+	
+	public void DisplayMemberLeaderboard(int displayedMembers, List<Integer> highestScores)
+	{
+		int alreadyDisplayed = 0;
+		
+		myGuild.loadMembers();
+		
+		// Create embed
+		EmbedBuilder embed = new EmbedBuilder();
+		
+		embed.setTitle("Asgard's Hall of Fame");
+		embed.setDescription("Here, the mightiest heroes are displayed.");
+		
+		// TODO: Add id
+		myGuild.getTextChannelById("925826296590766100").sendMessageEmbeds(embed.build()).queue();
+		
+		// Get the keys for the top values in the array
+		for (int n = 0; n < displayedMembers; n++)
+		{
+			for (Entry<String, Integer> memberEntry : PlayerPoints.entrySet()) 
+			{
+				// TODO: Change this
+				/*if (memberKey.equalsIgnoreCase("911659154777718794")
+						|| memberKey.equalsIgnoreCase("134073775925886976"))
+				{
+					continue;
+				}*/
+				
+				if (memberEntry.getValue().equals(highestScores.get(n)))
+				{
+					EmbedBuilder memberRanking = new EmbedBuilder();
+					
+					String place = "1st";
+					int ColourCode = 0XFFD700;
+					
+					switch (alreadyDisplayed) {
+					case 0:
+						place = "1st";
+						ColourCode = 0XFFD700;
+						break;
+					case 1:
+						place = "2nd";
+						ColourCode = 0x9a9a9a;
+						break;
+					case 2:
+						place = "3rd";
+						ColourCode = 0xcd7f32;
+						break;
+					case 3:
+						place = "4th";
+						ColourCode = 0xffffff;
+						break;
+					case 4:
+						place = "5th";
+						ColourCode = 0xffffff;
+						break;
+					default:
+						break;
+					}
+					
+					memberRanking.setTitle(place + " " + myGuild.getMemberById(memberEntry.getKey()).getEffectiveName());
+					
+					memberRanking.setColor(ColourCode);
+					
+					memberRanking.setFooter(memberEntry.getValue() + " Points", myGuild.getMemberById(memberEntry.getKey()).getUser().getAvatarUrl());
+					
+					System.out.print(myGuild.getMemberById(memberEntry.getKey()).getUser().getAvatarUrl());
+					
+					myGuild.getTextChannelById("925826296590766100").sendMessageEmbeds(memberRanking.build()).queue();
+					
+					alreadyDisplayed++;
+				}
+				
+				if (alreadyDisplayed >= displayedMembers)
+				{
+					return;
+				}
+			}
 		}
 	}
 	
