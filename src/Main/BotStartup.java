@@ -63,6 +63,6 @@ public class BotStartup {
 		
 		myGuildGameSystem.SetupSelectionChannel();
 		
-		myPointsSystem.CreatePlayerLeaderboard();
+		myPointsSystem.StartTimer();
 	}
 }

@@ -14,6 +14,8 @@ import Main.BotStartup;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -23,6 +25,10 @@ public class PointsSystem extends ListenerAdapter{
 	HashMap<String, Integer> PlayerTimer = new HashMap<>();
 	
 	Guild myGuild;
+	
+	TextChannel leaderboardChannel;
+	
+	int timerSeconds;
 	
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event)
 	{
@@ -47,6 +53,15 @@ public class PointsSystem extends ListenerAdapter{
 			SetPlayerTimer(event.getMember().getId(), 100);
 			
 			StartTimer(event.getMember().getId());
+		}*/
+		/*if (args[0].equalsIgnoreCase(BotStartup.prefix + "add"))
+		{
+			if (event.getGuild().getMemberById(args[1]) != null && args[2].length() > 0)
+			{
+				AddPlayerPoints(args[1], Integer.parseInt(args[2]));
+				
+				event.getChannel().sendMessage("Points Added").queue();
+			}
 		}*/
 	}
 	
@@ -103,6 +118,7 @@ public class PointsSystem extends ListenerAdapter{
 	{
 		myGuild = BotStartup.myBot.getGuildById("911650356084240384");
 
+		leaderboardChannel = myGuild.getTextChannelById("925826296590766100");
 		
 		List<Member> myMembers = myGuild.getMembers();
 		
@@ -160,7 +176,6 @@ public class PointsSystem extends ListenerAdapter{
 		embed.setTitle("Asgard's Hall of Fame");
 		embed.setDescription("Here, the mightiest heroes are displayed.");
 		
-		// TODO: Add id
 		myGuild.getTextChannelById("925826296590766100").sendMessageEmbeds(embed.build()).queue();
 		
 		// Get the keys for the top values in the array
@@ -215,7 +230,7 @@ public class PointsSystem extends ListenerAdapter{
 					
 					System.out.print(myGuild.getMemberById(memberEntry.getKey()).getUser().getAvatarUrl());
 					
-					myGuild.getTextChannelById("925826296590766100").sendMessageEmbeds(memberRanking.build()).queue();
+					leaderboardChannel.sendMessageEmbeds(memberRanking.build()).queue();
 					
 					alreadyDisplayed++;
 				}
@@ -247,8 +262,13 @@ public class PointsSystem extends ListenerAdapter{
 		return false;
 	}
 	
-	private void StartTimer(String memberID)
+	// Display the timer every X time
+	public void StartTimer()
 	{
+		CreatePlayerLeaderboard();
+		
+		timerSeconds = 180;
+		
 		Timer timer = new Timer();
 		
 		TimerTask task = new TimerTask() {
@@ -256,11 +276,27 @@ public class PointsSystem extends ListenerAdapter{
 			@Override
 			public void run() 
 			{
-				SetPlayerTimer(memberID, GetPlayerTimer(memberID) - 1);
+				timerSeconds -= 1;
 				
-				if (GetPlayerTimer(memberID) <= 0)
+				System.out.println(timerSeconds + " " + "\n");
+				
+				if (timerSeconds <= 0)
 				{
-					timer.cancel();
+					// Clear all previous messages
+					leaderboardChannel.getHistory().retrievePast(10).queue(mesagesList ->
+					{
+						if (mesagesList.size() > 0)
+						{
+							for (Message message : mesagesList)
+							{
+								message.delete().queue();
+							}
+						}	
+						
+						CreatePlayerLeaderboard();
+					});
+					
+					timerSeconds = 180;
 				}
 			}
 		};
