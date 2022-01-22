@@ -45,16 +45,13 @@ public class PointsSystem extends ListenerAdapter{
 		{
 			event.getChannel().sendMessage("You have " + GetPlayerPoints(event.getMember().getId()) + " points").queue();
 		}
-		// Comment this out. We don't need to add points on each message
-		/*else if (CanGetPoints(event.getMember().getId()))
+		
+		if (args[0].equalsIgnoreCase(BotStartup.prefix + "leaderboard") && BotStartup.isOwner(event.getMember().getId()))
 		{
-			RandPoints(event.getMember().getId());
-			
-			SetPlayerTimer(event.getMember().getId(), 100);
-			
-			StartTimer(event.getMember().getId());
-		}*/
-		/*if (args[0].equalsIgnoreCase(BotStartup.prefix + "add"))
+			CreatePlayerLeaderboard();
+		}
+
+		if (args[0].equalsIgnoreCase(BotStartup.prefix + "add") && BotStartup.isOwner(event.getMember().getId()))
 		{
 			if (event.getGuild().getMemberById(args[1]) != null && args[2].length() > 0)
 			{
@@ -62,7 +59,7 @@ public class PointsSystem extends ListenerAdapter{
 				
 				event.getChannel().sendMessage("Points Added").queue();
 			}
-		}*/
+		}
 	}
 	
 	private int GetPlayerPoints(String memberID)

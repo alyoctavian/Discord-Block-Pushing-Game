@@ -37,7 +37,7 @@ public class BotStartup {
 						.setChunkingFilter(ChunkingFilter.ALL)
 						.setMemberCachePolicy(MemberCachePolicy.ALL).enableIntents(GatewayIntent.GUILD_MEMBERS);
 		
-		jda.setActivity(Activity.playing("!Game"));
+		jda.setActivity(Activity.playing("Ratatosk's Race"));
 		jda.setStatus(OnlineStatus.ONLINE);
 		
 		jda.addEventListeners(new Embed());
@@ -64,5 +64,15 @@ public class BotStartup {
 		myGuildGameSystem.SetupSelectionChannel();
 		
 		myPointsSystem.StartTimer();
+	}
+	
+	public static boolean isOwner(String memberID)
+	{
+		if (memberID.equalsIgnoreCase("303140676458250240"))
+		{
+			return true;
+		}
+		
+		return false;
 	}
 }

@@ -347,7 +347,7 @@ public class GridBlocksGame extends ListenerAdapter{
 		}
 		
 		// TODO: Delete this
-		if (args[0].equalsIgnoreCase(BotStartup.prefix + "complete"))
+		if (args[0].equalsIgnoreCase(BotStartup.prefix + "complete") && BotStartup.isOwner(event.getMessage().getMember().getId()))
 		{
 			CompleteLevel();
 		}
