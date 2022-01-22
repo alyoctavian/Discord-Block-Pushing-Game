@@ -377,8 +377,6 @@ public class GridBlocksGame extends ListenerAdapter{
 			channel_game = event.getChannel();
 		}
 		
-		BotStartup.myPointsSystem.CreatePlayerLeaderboard();
-		
 		// Selecting the Hero Icon
 		if (SelectHeroMsg != null && event.getMessageId().equalsIgnoreCase(SelectHeroMsg.getId()))
 		{
@@ -479,6 +477,7 @@ public class GridBlocksGame extends ListenerAdapter{
 					categoryChannels.get(i).getManager().setTopic(event.getUser().getId()).queue();
 					
 					// Send the select character message
+					send_help_message(categoryChannels.get(i));
 					send_select_message(categoryChannels.get(i));
 					
 					// Store channel
@@ -1250,7 +1249,7 @@ public class GridBlocksGame extends ListenerAdapter{
 	public void send_help_message(TextChannel channel)
 	{
 		String help_string = 
-		"🔘 Complete the given equations by moving the number blocks into the " + 
+		"🔘 Complete the given equations by moving the number blocks **on top of* the " + 
 		":regional_indicator_q:" + " (quotient) and " + ":regional_indicator_r:" + " (remainder) blocks. \n";
 		
 		help_string += "🔘 To move your hero, select the arrows emotes below the maze " + 
@@ -1264,6 +1263,8 @@ public class GridBlocksGame extends ListenerAdapter{
 		":regional_indicator_r:" + " blocks.\n🔘 Moving towards number blocks will push them. \n";
 		
 		help_string += "🔘 When the numbers are in their place, use the " + submit_icon + " to submit your answer. \n";
+		
+		help_string += "🔘 **Careful!** You can only move one block at a time! \n";
 		
 		help_string += "🔘 !help -- brings up the help panel \n" +
 					   "🔘 !select -- lets you select the hero icon \n";
