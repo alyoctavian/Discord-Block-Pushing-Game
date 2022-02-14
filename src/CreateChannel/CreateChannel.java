@@ -32,7 +32,7 @@ public class CreateChannel extends ListenerAdapter{
 				channelExists = true;
 				
 				// Used for Debug purposes
-				event.getChannel().sendMessage("Channel Exists").queue();
+				//event.getChannel().sendMessage("Channel Exists").queue();
 				
 				return;
 			}
@@ -58,7 +58,7 @@ public class CreateChannel extends ListenerAdapter{
 					categoryChannels.get(i).getManager().setTopic("Topic Test").complete();
 					
 					// Used for Debug purposes
-					event.getChannel().sendMessage("Topic Set").queue();
+					//event.getChannel().sendMessage("Topic Set").queue();
 					
 					break;
 				}
@@ -67,7 +67,7 @@ public class CreateChannel extends ListenerAdapter{
 			// TODO: Check if channel exists by looking for name and permissions/access.
 		    
 		    // Used for Debug purposes
-		    event.getChannel().sendMessage("Channel Created").queue();
+		    //event.getChannel().sendMessage("Channel Created").queue();
 		}
 	}
 }

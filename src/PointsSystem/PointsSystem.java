@@ -225,7 +225,7 @@ public class PointsSystem extends ListenerAdapter{
 					
 					memberRanking.setFooter(memberEntry.getValue() + " Points", myGuild.getMemberById(memberEntry.getKey()).getUser().getAvatarUrl());
 					
-					System.out.print(myGuild.getMemberById(memberEntry.getKey()).getUser().getAvatarUrl());
+					//System.out.print(myGuild.getMemberById(memberEntry.getKey()).getUser().getAvatarUrl());
 					
 					leaderboardChannel.sendMessageEmbeds(memberRanking.build()).queue();
 					

@@ -487,14 +487,14 @@ public class GridBlocksGame extends ListenerAdapter{
 					}
 					
 					// Used for Debug purposes
-					event.getGuild().getDefaultChannel().sendMessage("Topic Set").queue();
+					//event.getGuild().getDefaultChannel().sendMessage("Topic Set").queue();
 					
 					break;
 				}
 			}
 		    
 		    // Used for Debug purposes
-		    event.getGuild().getDefaultChannel().sendMessage("Channel Created").queue();
+		    //event.getGuild().getDefaultChannel().sendMessage("Channel Created").queue();
 		}
 	}
 	
@@ -1249,7 +1249,7 @@ public class GridBlocksGame extends ListenerAdapter{
 	public void send_help_message(TextChannel channel)
 	{
 		String help_string = 
-		"🔘 Complete the given equations by moving the number blocks **on top of* the " + 
+		"🔘 Complete the given equations by moving the number blocks **on top of** the " + 
 		":regional_indicator_q:" + " (quotient) and " + ":regional_indicator_r:" + " (remainder) blocks. \n";
 		
 		help_string += "🔘 To move your hero, select the arrows emotes below the maze " + 
