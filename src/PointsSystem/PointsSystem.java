@@ -175,6 +175,8 @@ public class PointsSystem extends ListenerAdapter{
 		
 		myGuild.getTextChannelById("925826296590766100").sendMessageEmbeds(embed.build()).queue();
 		
+		List <String> membersShown = new ArrayList<>();
+		
 		// Get the keys for the top values in the array
 		for (int n = 0; n < displayedMembers; n++)
 		{
@@ -187,8 +189,10 @@ public class PointsSystem extends ListenerAdapter{
 					continue;
 				}*/
 				
-				if (memberEntry.getValue().equals(highestScores.get(n)))
+				if (memberEntry.getValue().equals(highestScores.get(n)) && !membersShown.contains(memberEntry.getKey()))
 				{
+					membersShown.add(memberEntry.getKey());
+					
 					EmbedBuilder memberRanking = new EmbedBuilder();
 					
 					String place = "1st";
@@ -275,7 +279,7 @@ public class PointsSystem extends ListenerAdapter{
 			{
 				timerSeconds -= 1;
 				
-				System.out.println(timerSeconds + " " + "\n");
+				//System.out.println(timerSeconds + " " + "\n");
 				
 				if (timerSeconds <= 0)
 				{

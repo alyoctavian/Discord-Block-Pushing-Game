@@ -304,10 +304,92 @@ public class GridBlocksGame extends ListenerAdapter{
 		return false;
 	}
 		
-	@Override
-	public void onGuildMessageReceived(GuildMessageReceivedEvent event)
+	public void GameMessageReceived(GuildMessageReceivedEvent event)
 	{
 		String[] args = event.getMessage().getContentRaw().split(" ");
+		
+		if (args[0].equalsIgnoreCase(BotStartup.prefix + "help"))
+		{
+			send_help_message(event.getChannel());
+		}
+		
+		// Create channel if asked to do so
+		if (args[0].equalsIgnoreCase(BotStartup.prefix + "create"))
+		{
+			// Create the room under the Games category
+			// Looks for categories named Game and stores the first (and the only) one
+			net.dv8tion.jda.api.entities.Category gamesCategory = event.getGuild().getCategoriesByName("Games", true).get(0);
+			
+			// Gets the text channels under the Games category
+			List<TextChannel> categoryChannels = gamesCategory.getTextChannels();
+			
+			Boolean channelExists = false;
+			
+			for (int i = 0; i < categoryChannels.size(); i++)
+			{
+				TextChannel game_channel = categoryChannels.get(i);
+				
+				if (game_channel.getName().equalsIgnoreCase("game1") && 
+						game_channel.getTopic().equalsIgnoreCase(event.getAuthor().getId()))
+				{
+					channelExists = true;
+					
+					// Used for Debug purposes
+					event.getGuild().getDefaultChannel().sendMessage("Channel Exists").queue();
+					
+					// Store channel
+					if(channel_game == null)
+					{
+						channel_game = game_channel;
+					}
+					
+					// Add permissions to the previous channel
+					game_channel.getManager().putMemberPermissionOverride(event.getMember().getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL), null).queue();
+					
+					return;
+				}
+			}
+			
+			if (!channelExists)
+			{
+				Guild guild = event.getMember().getGuild();
+				
+				String name = "game1";
+		
+				gamesCategory.createTextChannel(name)
+		         .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
+		         .addPermissionOverride(guild.getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
+		         .complete(); // this actually sends the request to discord.
+			    
+				categoryChannels = gamesCategory.getTextChannels();
+				
+				for (int i = 0; i < categoryChannels.size(); i++)
+				{
+					if (categoryChannels.get(i).getName().equalsIgnoreCase("game1") && event.getMember().hasAccess(categoryChannels.get(i)))
+					{
+						categoryChannels.get(i).getManager().setTopic(event.getAuthor().getId()).queue();
+						
+						// Send the select character message
+						send_help_message(categoryChannels.get(i));
+						send_select_message(categoryChannels.get(i));
+						
+						// Store channel
+						if (channel_game == null)
+						{
+							channel_game = categoryChannels.get(i);
+						}
+						
+						// Used for Debug purposes
+						//event.getGuild().getDefaultChannel().sendMessage("Topic Set").queue();
+						
+						break;
+					}
+				}
+			    
+			    // Used for Debug purposes
+			    //event.getGuild().getDefaultChannel().sendMessage("Channel Created").queue();
+			}
+	}
 		
 		if (!event.getChannel().getName().equalsIgnoreCase("game1"))
 		{
@@ -341,11 +423,6 @@ public class GridBlocksGame extends ListenerAdapter{
 			SendGridMessage(event.getChannel());
 		}
 		
-		if (args[0].equalsIgnoreCase(BotStartup.prefix + "help"))
-		{
-			send_help_message(event.getChannel());
-		}
-		
 		// TODO: Delete this
 		if (args[0].equalsIgnoreCase(BotStartup.prefix + "complete") && BotStartup.isOwner(event.getMessage().getMember().getId()))
 		{
@@ -353,8 +430,7 @@ public class GridBlocksGame extends ListenerAdapter{
 		}
 	}
 		
-	@Override
-	public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event)
+	public void GameReactionAdd(GuildMessageReactionAddEvent event)
 	{	
 		if (!event.getChannel().getName().equalsIgnoreCase("game1") ||
 			event.getMember().getUser().equals(event.getJDA().getSelfUser()))
@@ -420,8 +496,7 @@ public class GridBlocksGame extends ListenerAdapter{
 		}*/
 	}
 	
-	@Override
-	public void onGuildMemberJoin(GuildMemberJoinEvent event)
+	public void GameMemberJoin(GuildMemberJoinEvent event)
 	{
 		// Create the room under the Games category
 		// Looks for categories named Game and stores the first (and the only) one

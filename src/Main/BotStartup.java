@@ -8,6 +8,7 @@ import CreateChannel.CreateChannel;
 import Events.GuildMemberJoin;
 import Events.GuildMemberLeave;
 import Events.GuildMessageReceived;
+import GridBlocks.GameController;
 import GridBlocks.GridBlocksGame;
 import GuildGameSystem.GuildGameSystem;
 import PointsSystem.PointsSystem;
@@ -53,7 +54,7 @@ public class BotStartup {
 		jda.addEventListeners(myPointsSystem);
 		jda.addEventListeners(new CreateChannel());
 		
-		jda.addEventListeners(new GridBlocksGame());
+		jda.addEventListeners(new GameController());
 		
 		jda.addEventListeners(myGuildGameSystem);
 		
